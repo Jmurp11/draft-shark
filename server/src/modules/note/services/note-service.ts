@@ -134,7 +134,7 @@ export class NoteService {
         };
 
         const playerFields: Fields = {
-            fieldTable: 'notes',
+            fieldTable: 'notesReferences',
             fieldName: 'player',
             fieldOptions: {
                 is: player

@@ -64,7 +64,7 @@ export class Note extends BaseEntity {
     @OneToMany(() => NoteReference, nr => nr.note, {
         onDelete: 'CASCADE'
     })
-    noteConnection: Promise<NoteReference>;
+    noteReference: Promise<NoteReference>;
 
     @Field(() => [Player], { nullable: true })
     async references(@Ctx() { playersLoader }: MyContext): Promise<Player[]> {

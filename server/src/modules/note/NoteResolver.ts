@@ -36,7 +36,7 @@ export class NoteResolver {
             .createQueryBuilder('notes')
             .leftJoinAndSelect('notes.user', 'user')
             .leftJoinAndSelect('notes.folder', 'folder')
-            .leftJoinAndSelect('notes.noteConnection', 'nc')
+            .leftJoinAndSelect('notes.noteReference', 'nc')
             .take(take)
             .skip(skip)
             .orderBy('notes.creationTime', 'DESC')
@@ -87,7 +87,7 @@ export class NoteResolver {
             .createQueryBuilder('notes')
             .leftJoinAndSelect('notes.user', 'user')
             .leftJoinAndSelect('notes.folder', 'folder')
-            .leftJoinAndSelect('notes.noteConnection', 'nc');
+            .leftJoinAndSelect('notes.noteReference', 'nc');
 
         where = await this._notes.byId(id);
         return filterQuery(query, where).getOne();
