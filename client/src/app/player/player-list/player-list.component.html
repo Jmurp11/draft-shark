@@ -1,0 +1,7 @@
+<ion-list *ngFor="let player of playerListFiltered">
+  <app-player-list-item [player]="player" style="cursor: pointer;"></app-player-list-item>
+</ion-list>
+<ion-infinite-scroll threshold="100px" (ionInfinite)="loadMorePlayers($event)">
+  <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Loading more players...">
+  </ion-infinite-scroll-content>
+</ion-infinite-scroll>

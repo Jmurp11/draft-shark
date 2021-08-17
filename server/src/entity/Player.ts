@@ -8,8 +8,14 @@ import {
   OneToMany,
   PrimaryColumn
 } from 'typeorm';
-import { ObjectType, Field, Root } from 'type-graphql';
-import { Team, Projection, Note } from './index';
+import { ObjectType, Field, Root, Ctx } from 'type-graphql';
+import { Team } from './Team';
+import { Note } from './Note';
+import { Projection } from './Projection';
+import { MyContext } from 'src/shared';
+import { NoteReference } from './NoteReference';
+import { News } from './News';
+import { Stats } from './Stats';
 
 @Entity('players')
 @ObjectType()
@@ -81,6 +87,18 @@ export class Player extends BaseEntity {
   @Column('text', { nullable: true })
   birthDate: string;
 
+  @Field()
+  age(@Root() parent: Player): number {
+    const today = new Date();
+    const birthDate = new Date(parent.birthDate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
   @Field({ nullable: true })
   @Column('text', { nullable: true })
   college!: string;
@@ -109,7 +127,21 @@ export class Player extends BaseEntity {
   @Field(() => Projection, { nullable: true })
   projection: Projection;
 
-  @OneToMany(() => Note, note => note.player)
+  @OneToMany(() => Stats, stats => stats.player)
+  @Field(() => [Stats], { nullable: true })
+  stats: Stats[];
+
+  @OneToMany(() => News, news => news.playerId)
+  @Field(() => [News], { nullable: true })
+  news: News[];
+
+  @OneToMany(() => NoteReference, nr => nr.player, {
+    onDelete: 'CASCADE'
+  })
+  playerConnection: Promise<NoteReference>;
+
   @Field(() => [Note], { nullable: true })
-  notes: Note[];
+  async references(@Ctx() { notesLoader }: MyContext): Promise<Note[]> {
+    return notesLoader.load(this.id);
+  }
 }

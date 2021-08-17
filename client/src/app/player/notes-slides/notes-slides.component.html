@@ -1,0 +1,5 @@
+<ion-slides pager="true" [options]="slideOpts">
+  <ion-slide *ngFor="let note of notes">
+    <app-note class="card" [note]="note" [truncate]="false"></app-note>
+  </ion-slide>
+</ion-slides>

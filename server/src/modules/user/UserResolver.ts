@@ -2,13 +2,13 @@ import 'dotenv/config';
 import { Resolver, Query, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
 import bcrypt from 'bcryptjs';
 import { v4 } from 'uuid';
-import { User } from '../../entity';
+import { User } from '../../entity/User';
 import { RegisterInput, LoginInput, AdminInput } from './inputs';
 import { Result } from '../../shared';
-import { registerSuccess, loginFailed, confirmEmailError, forgotPasswordLockError } from './messages/messages';
+import { registerSuccess, loginFailed, forgotPasswordLockError } from './messages/messages';
 import { MyContext } from '../../shared';
 import { isAuth, logger, isAdmin } from '../../middleware';
-import { sendEmail, createConfirmationUrl } from '../../utils';
+import { sendEmail } from '../../utils';
 import { redis } from '../../redis';
 import { baseUrl, forgotPasswordPrefix, confirmationPrefix } from '../../constants/constants';
 import { ChangePasswordInput } from './inputs/ChangePasswordInput';
@@ -40,8 +40,7 @@ export class UserResolver {
 
         const query: SelectQueryBuilder<User> = getRepository(User)
             .createQueryBuilder('users')
-            .leftJoinAndSelect('users.notes', 'notes')
-            .leftJoinAndSelect('users.targets', 'targets')
+            .leftJoinAndSelect('user.folders', 'folders')
             .take(take)
             .skip(skip)
             .orderBy('users.username', 'ASC');
@@ -68,18 +67,17 @@ export class UserResolver {
 
         const query: SelectQueryBuilder<User> = getRepository(User)
             .createQueryBuilder('users')
-            .leftJoinAndSelect('users.notes', 'notes')
-            .leftJoinAndSelect('user.targets', 'targets')
-            .orderBy('user.username', 'ASC')
+            .leftJoinAndSelect('user.folders', 'folders')
+            .leftJoinAndSelect('user.folders.notes', 'folders')
 
         switch (filterType) {
-            case 'byCurrentUser':
+            case 'byId':
                 where = await this._users.byId(id);
                 return filterQuery(query, where).getOne();
-            case 'byUser':
+            case 'byEmail':
                 where = await this._users.byEmail(email);
                 return filterQuery(query, where).getOne();
-            case 'byPlayer':
+            case 'byUsername':
                 where = await this._users.byUsername(username);
                 return filterQuery(query, where).getOne();
             default:
@@ -87,10 +85,10 @@ export class UserResolver {
         }
     }
 
-    @Mutation(() => Result)
+    @Mutation(() => LoginResult)
     async register(
         @Arg('input') { email, password, username, profileImage }: RegisterInput
-    ): Promise<Result> {
+    ): Promise<LoginResult> {
 
         const creationTime = new Date().toISOString();
 
@@ -103,15 +101,13 @@ export class UserResolver {
             lastLoggedIn: creationTime
         }).save();
 
-        await sendEmail(email, await createConfirmationUrl(user.id), 'Confirm');
+        // await sendEmail(email, await createConfirmationUrl(user.id), 'Confirm');
 
         return {
-            success: [
-                {
-                    path: 'register',
-                    message: registerSuccess
-                }
-            ]
+            success: {
+                user,
+                message: registerSuccess
+            }
         }
     }
 
@@ -124,6 +120,7 @@ export class UserResolver {
         }: LoginInput,
         @Ctx() { res }: MyContext
     ): Promise<LoginResult> {
+        console.log(email);
         let user = await User.findOne({
             where: [
                 { email },
@@ -154,18 +151,18 @@ export class UserResolver {
                 ]
             }
         }
-
-        if (!user.confirmed) {
-            return {
-                errors: [
-                    {
-                        path: 'login',
-                        message: confirmEmailError
+        /**
+                if (!user.confirmed) {
+                    return {
+                        errors: [
+                            {
+                                path: 'login',
+                                message: confirmEmailError
+                            }
+                        ]
                     }
-                ]
-            }
-        }
-
+                }
+        */
         if (user.forgotPasswordLock) {
             return {
                 errors: [
@@ -354,10 +351,10 @@ export class UserResolver {
         }
     }
 
-    @Mutation(() => Boolean)
+    @Mutation(() => Result)
     async logout(
         @Ctx() { res, payload }: MyContext
-    ) {
+    ): Promise<Result> {
         await User.update(
             { id: payload?.userId },
             { isLoggedIn: false }
@@ -366,8 +363,16 @@ export class UserResolver {
         res.clearCookie('access-token');
         res.clearCookie('refresh-token');
 
-        return true;
+        return {
+            success: [
+                {
+                    path: 'logout',
+                    message: 'User logged out successfully!'
+                }
+            ]
+        }
     };
+
 
     @UseMiddleware(isAuth, logger)
     @Mutation(() => Result)

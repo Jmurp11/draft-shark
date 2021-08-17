@@ -7,13 +7,20 @@ import {
     ManyToOne,
     OneToMany
 } from 'typeorm';
-import { Score, Player, User } from './index';
-import { ObjectType, Field } from 'type-graphql';
+import { Player } from './Player';
+import { User } from './User';
+import { ObjectType, Field, Ctx } from 'type-graphql';
+import { Folder } from './Folder';
+import { NoteReference } from './NoteReference';
+import { MyContext } from '../shared';
 
 /**
  * remove player, change to subject
  * fields for fantasy / gambling
  * field for sport (NFL, MLB, NHL etc)
+ * 
+ * potential issues: 
+ *  ** joins on player
  */
 @Entity('notes')
 @ObjectType()
@@ -28,13 +35,11 @@ export class Note extends BaseEntity {
     @Column('uuid')
     user!: string;
 
-    @ManyToOne(() => Player, {
-        eager: true
-    })
-    @JoinColumn({ name: 'player' })
-    @Field(() => Player)
-    @Column('int')
-    player!: number;
+    @ManyToOne(() => Folder)
+    @JoinColumn({ name: 'folder' })
+    @Field(() => Folder, { nullable: true })
+    @Column('uuid', { nullable: true })
+    folder: string;
 
     @Field()
     @Column('text')
@@ -48,14 +53,21 @@ export class Note extends BaseEntity {
     @Column('boolean', { default: false })
     isPrivate!: boolean;
 
-    @Field(() => [Score], { nullable: true })
-    @OneToMany(() => Score, score => score.note, {
-        eager: true,
-        onDelete: 'CASCADE'
-    })
-    score: Score[];
-
     @Field(() => Date)
     @Column('timestamp')
     creationTime!: string;
+
+    @Field(() => Date)
+    @Column('timestamp')
+    updatedTime!: string;
+
+    @OneToMany(() => NoteReference, nr => nr.note, {
+        onDelete: 'CASCADE'
+    })
+    noteReference: Promise<NoteReference>;
+
+    @Field(() => [Player], { nullable: true })
+    async references(@Ctx() { playersLoader }: MyContext): Promise<Player[]> {
+        return playersLoader.load(this.id);
+    }
 }

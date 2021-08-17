@@ -1,0 +1,15 @@
+<ion-card class="card">
+  <ion-card-header>
+    <ion-card-title>{{ note.title }}</ion-card-title>
+    <ion-card-subtitle>{{ note.user.username | titlecase }} - {{ note.updatedTime | date }}</ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content *ngIf="truncate">
+    {{ (note.body | slice:0:150) + '...' }}
+  </ion-card-content>
+  <ion-card-content *ngIf="!truncate">
+    {{ note.body }}
+  </ion-card-content>
+  <span *ngFor="let ref of note.references">
+    <ion-chip color="primary" (click)="navigateToPlayer(ref.id)">{{ ref.name }}, {{ ref.position }}</ion-chip>
+  </span>
+</ion-card>

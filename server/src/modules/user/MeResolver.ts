@@ -1,9 +1,8 @@
 import { logger } from '../../middleware';
 import { Resolver, Query, Ctx, UseMiddleware } from 'type-graphql';
-import { User } from '../../entity';
+import { User } from '../../entity/User';
 import { MyContext } from '../../shared';
 import { verify } from 'jsonwebtoken';
-
 
 @Resolver()
 export class MeResolver {
@@ -40,13 +39,6 @@ export class MeResolver {
     }
 
     return User.findOne({
-      relations: [
-        'score',
-        'score.user',
-        'score.note',
-        'notes',
-        'targets'
-      ],
       where: {
         id: user.id
       }

@@ -1,5 +1,5 @@
-mutation addTeamStats($data: TeamStatsInput!) {
-  addTeamStats(input: $data) {
+mutation addTeamStats {
+  addTeamStats {
     success {
       message
     }

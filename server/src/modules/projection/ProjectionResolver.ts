@@ -1,10 +1,8 @@
 import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
 import { getRepository } from "typeorm";
-import {
-    Player,
-    Projection,
-    Team
-} from '../../entity';
+import { Projection } from '../../entity/Projection';
+import { Team } from '../../entity/Team';
+import { Player } from '../../entity/Player';
 import { Result } from '../../shared';
 import { ProjectionInput } from './inputs/ProjectionInput';
 import { logger } from '../../middleware';
@@ -45,19 +43,18 @@ export class ProjectionResolver {
         const teamId = teamResult!.id;
 
         const player = await getRepository(Player)
-        .findOne({
-            relations: ['team'],
-            where: [
-                {
-                    firstName,
-                    lastName,
-                    team: teamId
-                }
-            ]
-        });
+            .findOne({
+                relations: ['team'],
+                where: [
+                    {
+                        firstName,
+                        lastName,
+                        team: teamId
+                    }
+                ]
+            });
 
         if (player) {
-            console.log(player.id);
             await Projection.create({
                 player: player.id,
                 completions,

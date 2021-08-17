@@ -1,0 +1,12 @@
+<div style="width: 100%;">
+  <ion-row>
+    <ion-col col-4 *ngFor="let header of headers" style="font-weight: bold; font-size: 10pt;">
+      {{ header === 'cmpPerc' ? ('cmp%' | uppercase) : (header | uppercase) }}
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col col-4 *ngFor="let stat of stats">
+      {{ isNumber(stat) ? (stat | number: '1.1-2') : stat }}
+    </ion-col>
+  </ion-row>
+</div>

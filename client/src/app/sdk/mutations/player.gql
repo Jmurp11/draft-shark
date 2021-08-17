@@ -8,3 +8,25 @@ mutation updatePlayers {
     }
   }
 }
+
+mutation addStats {
+  addStats {
+    success {
+      message
+    }
+    errors {
+      message
+    }
+  }
+}
+
+mutation getNews {
+  getNews {
+    success {
+      message
+    }
+    errors {
+      message
+    }
+  }
+}

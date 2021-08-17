@@ -1,0 +1,12 @@
+<ion-slides pager="true" [options]="slideOpts">
+  <ion-slide *ngFor="let slide of slides">
+    <ion-card class="card">
+      <ion-card-header>
+        <ion-card-title>{{ slide.title }}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <app-stat-slide [stat]="slide.value"></app-stat-slide>
+      </ion-card-content>
+    </ion-card>
+  </ion-slide>
+</ion-slides>

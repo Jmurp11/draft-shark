@@ -9,6 +9,8 @@ import { buildSchema } from 'type-graphql';
 import cookieParser from 'cookie-parser';
 import { baseUrl } from './constants/constants';
 import Container from './container';
+import { createNotesLoader } from './utils/notesLoader';
+import { createPlayersLoader } from './utils/playersLoader';
 
 (async () => {
   const app = express();
@@ -35,7 +37,12 @@ import Container from './container';
       container: Container,
       dateScalarMode: "isoDate"
     }),
-    context: ({ req, res }) => ({ req, res })
+    context: ({ req, res }) => ({ 
+      req,
+      res,
+      notesLoader: createNotesLoader(),
+      playersLoader: createPlayersLoader()
+    })
   });
 
   apolloServer.applyMiddleware({ app, cors: corOptions });
@@ -47,6 +54,6 @@ import Container from './container';
   const port = process.env.PORT || 4000;
 
   httpServer.listen(port, async () => {
-    console.log(chalk.magentaBright('🏈  Draft Shark server is running on ') + chalk.greenBright('127.0.0.1:4000') + chalk.magentaBright('...'));
+    console.log(chalk.blueBright('🏈  Draft Shark server is running on ') + chalk.greenBright(`127.0.0.1:${port}`) + chalk.greenBright('...'));
   });
 })();

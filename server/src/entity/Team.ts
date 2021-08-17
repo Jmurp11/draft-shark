@@ -1,5 +1,5 @@
-  
-import { 
+
+import {
     Entity,
     Column,
     BaseEntity,
@@ -8,7 +8,9 @@ import {
     ManyToOne
 } from 'typeorm';
 import { ObjectType, Field, Root } from 'type-graphql';
-import { TeamStats, Stadium, Standings } from './index';
+import { Standings } from './Standings';
+import { Stadium } from './Stadium';
+import { TeamStats } from './Team-Stats';
 
 @Entity('teams')
 @ObjectType()
@@ -27,7 +29,7 @@ export class Team extends BaseEntity {
 
     @Field()
     fullName(@Root() parent: Team): string {
-      return `${parent.city} ${parent.nickname}`;
+        return `${parent.city} ${parent.nickname}`;
     }
 
     @Field()
@@ -41,7 +43,7 @@ export class Team extends BaseEntity {
     @Field()
     @Column('text')
     logoUrl!: string;
-    
+
     @Field()
     @Column('text')
     primaryColor!: string;
@@ -58,37 +60,37 @@ export class Team extends BaseEntity {
     @Column('text')
     division!: string;
 
-    @Field()
-    @Column('text')
+    @Field({ nullable: true })
+    @Column('text', { nullable: true })
     headCoach!: string;
 
-    @Field()
-    @Column('text')
+    @Field({ nullable: true })
+    @Column('text', { nullable: true })
     offensiveCoordinator!: string;
 
-    @Field()
-    @Column('text')
+    @Field({ nullable: true })
+    @Column('text', { nullable: true })
     defensiveCoordinator!: string;
 
-    @Field()
-    @Column('text')
+    @Field({ nullable: true })
+    @Column('text', { nullable: true })
     offensiveScheme!: string;
 
-    @Field()
-    @Column('text')
+    @Field({ nullable: true })
+    @Column('text', { nullable: true })
     defensiveScheme!: string;
 
     @ManyToOne(() => Stadium, stadium => stadium.team, {
         eager: true
     })
-    @Field(() => Stadium)
-    @Column('int')
+    @Field(() => Stadium, { nullable: true })
+    @Column('int', { nullable: true })
     stadium: number;
 
     @OneToOne(() => Standings, standings => standings.team, {
         eager: true
     })
-    @Field(() => Standings)
+    @Field(() => Standings, { nullable: true })
     standings: Standings;
 
     @OneToOne(() => TeamStats, stats => stats.team, {

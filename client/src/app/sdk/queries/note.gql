@@ -1,50 +1,49 @@
-query notes($data: NoteArgs!){
+query notes($data: NoteArgs!) {
   notes(input: $data) {
     id
     title
     body
+    folder {
+      id
+      title
+    }
     isPrivate
     creationTime
+    updatedTime
     user {
       id
       username
       profileImage
     }
-    player {
+    references {
       id
       name
       position
-      photoUrl
-      team {
-        id
-        abbreviation
-      }
     }
   }
 }
 
-
-query note($data: NoteArgs!){
+query note($data: NoteArgs!) {
   note(input: $data) {
     id
     title
     body
+    folder {
+      id
+      title
+    }
     isPrivate
     creationTime
+    updatedTime
     user {
       id
       username
       profileImage
     }
-    player {
+    references {
       id
       name
       position
-      photoUrl
-      team {
-        id
-        abbreviation
-      }
     }
   }
 }

@@ -1,7 +1,7 @@
-import gql from 'graphql-tag';
+import { gql } from 'apollo-angular';
 import { Injectable } from '@angular/core';
 import * as Apollo from 'apollo-angular';
-import * as ApolloCore from 'apollo-client';
+import * as ApolloCore from '@apollo/client/core';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
@@ -38,6 +38,25 @@ export type DeleteTargetArgs = {
   id?: Maybe<Scalars['String']>;
 };
 
+export type Folder = {
+  __typename?: 'Folder';
+  id: Scalars['String'];
+  user: User;
+  title: Scalars['String'];
+  notes?: Maybe<Array<Note>>;
+  creationTime: Scalars['DateTime'];
+  updatedTime: Scalars['DateTime'];
+};
+
+export type FolderArgs = {
+  filterType?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  user?: Maybe<Scalars['String']>;
+  take?: Maybe<Scalars['Float']>;
+  skip?: Maybe<Scalars['Float']>;
+};
+
 export type LoginInput = {
   email?: Maybe<Scalars['String']>;
   username?: Maybe<Scalars['String']>;
@@ -58,8 +77,11 @@ export type LoginSuccess = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  addScore: Result;
+  createFolder: Result;
+  editFolder: Result;
+  deleteFolder: Result;
   createNote: Result;
+  editNote: Result;
   deleteNote: Result;
   updatePlayers: Result;
   createProjection: Result;
@@ -67,25 +89,44 @@ export type Mutation = {
   deleteTarget: Result;
   updateTeams: Result;
   addTeamStats: Result;
-  register: Result;
+  register: LoginResult;
   login?: Maybe<LoginResult>;
   updateAdminStatus: Result;
   confirmUser: Result;
   forgotPassword: Result;
   changePassword: Result;
-  logout: Scalars['Boolean'];
+  logout: Result;
   updateUserProfileImage: Result;
+  getNews: Result;
+  getLatestNews: Result;
   updateStadiums: Result;
   updateStandings: Result;
+  addStats: Result;
 };
 
 
-export type MutationAddScoreArgs = {
-  input: ScoreInput;
+export type MutationCreateFolderArgs = {
+  input: FolderArgs;
+};
+
+
+export type MutationEditFolderArgs = {
+  input: FolderArgs;
+};
+
+
+export type MutationDeleteFolderArgs = {
+  input: FolderArgs;
 };
 
 
 export type MutationCreateNoteArgs = {
+  references: Array<PlayerReferenceInput>;
+  input: NoteInput;
+};
+
+
+export type MutationEditNoteArgs = {
   input: NoteInput;
 };
 
@@ -107,11 +148,6 @@ export type MutationCreateTargetArgs = {
 
 export type MutationDeleteTargetArgs = {
   input: DeleteTargetArgs;
-};
-
-
-export type MutationAddTeamStatsArgs = {
-  input: TeamStatsInput;
 };
 
 
@@ -149,29 +185,47 @@ export type MutationUpdateUserProfileImageArgs = {
   input: UpdateImageInput;
 };
 
+export type News = {
+  __typename?: 'News';
+  id: Scalars['Float'];
+  source: Scalars['String'];
+  timeAgo: Scalars['String'];
+  updated: Scalars['DateTime'];
+  title: Scalars['String'];
+  content: Scalars['String'];
+  playerId?: Maybe<Player>;
+  teamId: Scalars['String'];
+  originalSource: Scalars['String'];
+  originalSourceUrl: Scalars['String'];
+};
+
 export type Note = {
   __typename?: 'Note';
   id: Scalars['String'];
   user: User;
-  player: Player;
+  folder?: Maybe<Folder>;
   title: Scalars['String'];
   body: Scalars['String'];
   isPrivate: Scalars['Boolean'];
-  score?: Maybe<Array<Score>>;
   creationTime: Scalars['DateTime'];
+  updatedTime: Scalars['DateTime'];
+  references?: Maybe<Array<Player>>;
 };
 
 export type NoteArgs = {
   filterType?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
   player?: Maybe<Scalars['Float']>;
   user?: Maybe<Scalars['String']>;
+  folder?: Maybe<Scalars['String']>;
   take?: Maybe<Scalars['Float']>;
   skip?: Maybe<Scalars['Float']>;
 };
 
 export type NoteInput = {
-  player: Scalars['Float'];
+  id?: Maybe<Scalars['String']>;
   title: Scalars['String'];
+  folder?: Maybe<Scalars['String']>;
   body: Scalars['String'];
   isPrivate: Scalars['Boolean'];
 };
@@ -200,6 +254,7 @@ export type Player = {
   depthChart?: Maybe<Scalars['Float']>;
   photoUrl: Scalars['String'];
   birthDate?: Maybe<Scalars['String']>;
+  age: Scalars['Float'];
   college?: Maybe<Scalars['String']>;
   draftYear?: Maybe<Scalars['Float']>;
   draftRound?: Maybe<Scalars['Float']>;
@@ -207,7 +262,9 @@ export type Player = {
   isUndrafted: Scalars['Boolean'];
   averageDraftPosition?: Maybe<Scalars['Float']>;
   projection?: Maybe<Projection>;
-  notes?: Maybe<Array<Note>>;
+  stats?: Maybe<Array<Stats>>;
+  news?: Maybe<Array<News>>;
+  references?: Maybe<Array<Note>>;
 };
 
 export type PlayerArgs = {
@@ -220,6 +277,10 @@ export type PlayerArgs = {
   status?: Maybe<Scalars['String']>;
   take?: Maybe<Scalars['Float']>;
   skip?: Maybe<Scalars['Float']>;
+};
+
+export type PlayerReferenceInput = {
+  player?: Maybe<Scalars['Float']>;
 };
 
 export type Projection = {
@@ -269,12 +330,9 @@ export type ProjectionInput = {
 
 export type Query = {
   __typename?: 'Query';
-  scores: Array<Score>;
-  score: Score;
-  totalScores: Scalars['Int'];
-  noteScore: Scalars['Int'];
-  userScoresCount: Scalars['Int'];
-  userGeneratedScoresCount: Scalars['Int'];
+  folders: Array<Folder>;
+  folder: Folder;
+  folderCount: Scalars['Int'];
   notes: Array<Note>;
   note: Note;
   noteCount: Scalars['Int'];
@@ -287,10 +345,9 @@ export type Query = {
   avgTargetRound?: Maybe<Scalars['Float']>;
   teams: Array<Team>;
   team: Team;
-  allTeamsStats: Array<TeamStats>;
-  teamStat: TeamStats;
   users: Array<User>;
   user: User;
+  news: Array<News>;
   stadiums: Array<Stadium>;
   standings: Array<Standings>;
   standing: Standings;
@@ -298,32 +355,17 @@ export type Query = {
 };
 
 
-export type QueryScoresArgs = {
-  user: Scalars['String'];
+export type QueryFoldersArgs = {
+  input: FolderArgs;
 };
 
 
-export type QueryScoreArgs = {
-  id: Scalars['String'];
+export type QueryFolderArgs = {
+  input: FolderArgs;
 };
 
 
-export type QueryTotalScoresArgs = {
-  noteId: Scalars['String'];
-};
-
-
-export type QueryNoteScoreArgs = {
-  noteId: Scalars['String'];
-};
-
-
-export type QueryUserScoresCountArgs = {
-  user: Scalars['String'];
-};
-
-
-export type QueryUserGeneratedScoresCountArgs = {
+export type QueryFolderCountArgs = {
   user: Scalars['String'];
 };
 
@@ -383,11 +425,6 @@ export type QueryTeamArgs = {
 };
 
 
-export type QueryTeamStatArgs = {
-  id: Scalars['String'];
-};
-
-
 export type QueryUsersArgs = {
   input: UserArgs;
 };
@@ -419,21 +456,6 @@ export type Result = {
   __typename?: 'Result';
   success?: Maybe<Array<Response>>;
   errors?: Maybe<Array<Response>>;
-};
-
-export type Score = {
-  __typename?: 'Score';
-  id: Scalars['String'];
-  user: User;
-  note: Note;
-  response: Scalars['Boolean'];
-  creationTime: Scalars['DateTime'];
-};
-
-export type ScoreInput = {
-  user: Scalars['String'];
-  note: Scalars['String'];
-  response: Scalars['Boolean'];
 };
 
 export type Stadium = {
@@ -468,6 +490,37 @@ export type Standings = {
   netPoints: Scalars['Float'];
 };
 
+export type Stats = {
+  __typename?: 'Stats';
+  id: Scalars['Float'];
+  player: Player;
+  gamesPlayed: Scalars['Float'];
+  year: Scalars['Float'];
+  completions: Scalars['Float'];
+  attempts: Scalars['Float'];
+  completionPercentage?: Maybe<Scalars['Float']>;
+  yardsPerAttempt?: Maybe<Scalars['Float']>;
+  passYards: Scalars['Float'];
+  passTd: Scalars['Float'];
+  interception: Scalars['Float'];
+  carries: Scalars['Float'];
+  rushYards: Scalars['Float'];
+  yardsPerCarry?: Maybe<Scalars['Float']>;
+  rushTd: Scalars['Float'];
+  fumbles: Scalars['Float'];
+  targets: Scalars['Float'];
+  receptions: Scalars['Float'];
+  receivingYards: Scalars['Float'];
+  yardsPerReception?: Maybe<Scalars['Float']>;
+  receivingTd: Scalars['Float'];
+  touches: Scalars['Float'];
+  offensiveTeamSnaps: Scalars['Float'];
+  offensiveSnapsPlayed: Scalars['Float'];
+  halfPPRTotalPoints: Scalars['Float'];
+  pprTotalPoints: Scalars['Float'];
+  totalPoints: Scalars['Float'];
+};
+
 export type Subscription = {
   __typename?: 'Subscription';
   newNotification: Notification;
@@ -476,11 +529,6 @@ export type Subscription = {
 
 export type SubscriptionNewNotificationArgs = {
   user: Scalars['String'];
-};
-
-export type SubscriptionInput = {
-  user: Scalars['String'];
-  note: Scalars['String'];
 };
 
 export type Target = {
@@ -517,13 +565,13 @@ export type Team = {
   secondaryColor: Scalars['String'];
   conference: Scalars['String'];
   division: Scalars['String'];
-  headCoach: Scalars['String'];
-  offensiveCoordinator: Scalars['String'];
-  defensiveCoordinator: Scalars['String'];
-  offensiveScheme: Scalars['String'];
-  defensiveScheme: Scalars['String'];
-  stadium: Stadium;
-  standings: Standings;
+  headCoach?: Maybe<Scalars['String']>;
+  offensiveCoordinator?: Maybe<Scalars['String']>;
+  defensiveCoordinator?: Maybe<Scalars['String']>;
+  offensiveScheme?: Maybe<Scalars['String']>;
+  defensiveScheme?: Maybe<Scalars['String']>;
+  stadium?: Maybe<Stadium>;
+  standings?: Maybe<Standings>;
   stats?: Maybe<TeamStats>;
 };
 
@@ -543,27 +591,27 @@ export type TeamStats = {
   __typename?: 'TeamStats';
   id: Scalars['Float'];
   team?: Maybe<Team>;
-  rank: Scalars['Float'];
-  passRank: Scalars['Float'];
-  rushRank: Scalars['Float'];
-  yards: Scalars['Float'];
+  timeOfPossession: Scalars['String'];
+  year: Scalars['Float'];
+  firstDowns: Scalars['Float'];
+  firstDownsByRushing: Scalars['Float'];
+  firstDownsByPassing: Scalars['Float'];
   plays: Scalars['Float'];
+  yards: Scalars['Float'];
   yardsPerPlay: Scalars['Float'];
+  touchdowns: Scalars['Float'];
+  rushingAttempts: Scalars['Float'];
+  rushingYards: Scalars['Float'];
+  rushingYardsPerAttempt: Scalars['Float'];
+  rushingTouchdowns: Scalars['Float'];
+  passingAttempts: Scalars['Float'];
+  passingCompletions: Scalars['Float'];
+  passingYards: Scalars['Float'];
+  passingYardsPerAttempt: Scalars['Float'];
+  passingTouchdowns: Scalars['Float'];
+  thirdDownPercentage: Scalars['Float'];
+  redzoneAttempts: Scalars['Float'];
   turnovers: Scalars['Float'];
-  passAttempts: Scalars['Float'];
-  passCompletions: Scalars['Float'];
-  passYards: Scalars['Float'];
-  passTd: Scalars['Float'];
-  interception: Scalars['Float'];
-  netYardsPerPass: Scalars['Float'];
-  rushAttempt: Scalars['Float'];
-  rushYards: Scalars['Float'];
-  rushTd: Scalars['Float'];
-  yardsPerRush: Scalars['Float'];
-  scorePercentage: Scalars['Float'];
-  turnoverPercentage: Scalars['Float'];
-  offensiveLineRank: Scalars['Float'];
-  runningBackSoS: Scalars['Float'];
 };
 
 export type TeamStatsInput = {
@@ -611,8 +659,7 @@ export type User = {
   lastLoggedIn: Scalars['DateTime'];
   isAdmin: Scalars['Boolean'];
   profileImage?: Maybe<Scalars['String']>;
-  notes?: Maybe<Array<Note>>;
-  score?: Maybe<Array<Score>>;
+  folders?: Maybe<Array<Folder>>;
   targets?: Maybe<Array<Target>>;
 };
 
@@ -637,9 +684,10 @@ export type LoginMutation = (
     { __typename?: 'LoginResult' }
     & { success?: Maybe<(
       { __typename?: 'LoginSuccess' }
+      & Pick<LoginSuccess, 'message'>
       & { user?: Maybe<(
         { __typename?: 'User' }
-        & Pick<User, 'id' | 'email' | 'username' | 'isAdmin'>
+        & Pick<User, 'id' | 'email' | 'username' | 'isAdmin' | 'profileImage'>
       )> }
     )>, errors?: Maybe<Array<(
       { __typename?: 'Response' }
@@ -656,11 +704,15 @@ export type RegisterMutationVariables = Exact<{
 export type RegisterMutation = (
   { __typename?: 'Mutation' }
   & { register: (
-    { __typename?: 'Result' }
-    & { success?: Maybe<Array<(
-      { __typename?: 'Response' }
-      & Pick<Response, 'message'>
-    )>>, errors?: Maybe<Array<(
+    { __typename?: 'LoginResult' }
+    & { success?: Maybe<(
+      { __typename?: 'LoginSuccess' }
+      & Pick<LoginSuccess, 'message'>
+      & { user?: Maybe<(
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'email' | 'username' | 'isAdmin' | 'profileImage'>
+      )> }
+    )>, errors?: Maybe<Array<(
       { __typename?: 'Response' }
       & Pick<Response, 'message'>
     )>> }
@@ -672,17 +724,7 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 export type LogoutMutation = (
   { __typename?: 'Mutation' }
-  & Pick<Mutation, 'logout'>
-);
-
-export type ConfirmUserMutationVariables = Exact<{
-  data: Scalars['String'];
-}>;
-
-
-export type ConfirmUserMutation = (
-  { __typename?: 'Mutation' }
-  & { confirmUser: (
+  & { logout: (
     { __typename?: 'Result' }
     & { success?: Maybe<Array<(
       { __typename?: 'Response' }
@@ -694,14 +736,14 @@ export type ConfirmUserMutation = (
   ) }
 );
 
-export type ForgotPasswordMutationVariables = Exact<{
-  data: Scalars['String'];
+export type CreateFolderMutationVariables = Exact<{
+  data: FolderArgs;
 }>;
 
 
-export type ForgotPasswordMutation = (
+export type CreateFolderMutation = (
   { __typename?: 'Mutation' }
-  & { forgotPassword: (
+  & { createFolder: (
     { __typename?: 'Result' }
     & { success?: Maybe<Array<(
       { __typename?: 'Response' }
@@ -713,14 +755,33 @@ export type ForgotPasswordMutation = (
   ) }
 );
 
-export type ChangePasswordMutationVariables = Exact<{
-  data: ChangePasswordInput;
+export type EditFolderMutationVariables = Exact<{
+  data: FolderArgs;
 }>;
 
 
-export type ChangePasswordMutation = (
+export type EditFolderMutation = (
   { __typename?: 'Mutation' }
-  & { changePassword: (
+  & { editFolder: (
+    { __typename?: 'Result' }
+    & { success?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>>, errors?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>> }
+  ) }
+);
+
+export type DeleteFolderMutationVariables = Exact<{
+  data: FolderArgs;
+}>;
+
+
+export type DeleteFolderMutation = (
+  { __typename?: 'Mutation' }
+  & { deleteFolder: (
     { __typename?: 'Result' }
     & { success?: Maybe<Array<(
       { __typename?: 'Response' }
@@ -734,12 +795,32 @@ export type ChangePasswordMutation = (
 
 export type CreateNoteMutationVariables = Exact<{
   data: NoteInput;
+  references: Array<PlayerReferenceInput> | PlayerReferenceInput;
 }>;
 
 
 export type CreateNoteMutation = (
   { __typename?: 'Mutation' }
   & { createNote: (
+    { __typename?: 'Result' }
+    & { success?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>>, errors?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>> }
+  ) }
+);
+
+export type EditNoteMutationVariables = Exact<{
+  data: NoteInput;
+}>;
+
+
+export type EditNoteMutation = (
+  { __typename?: 'Mutation' }
+  & { editNote: (
     { __typename?: 'Result' }
     & { success?: Maybe<Array<(
       { __typename?: 'Response' }
@@ -776,6 +857,40 @@ export type UpdatePlayersMutationVariables = Exact<{ [key: string]: never; }>;
 export type UpdatePlayersMutation = (
   { __typename?: 'Mutation' }
   & { updatePlayers: (
+    { __typename?: 'Result' }
+    & { success?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>>, errors?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>> }
+  ) }
+);
+
+export type AddStatsMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AddStatsMutation = (
+  { __typename?: 'Mutation' }
+  & { addStats: (
+    { __typename?: 'Result' }
+    & { success?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>>, errors?: Maybe<Array<(
+      { __typename?: 'Response' }
+      & Pick<Response, 'message'>
+    )>> }
+  ) }
+);
+
+export type GetNewsMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetNewsMutation = (
+  { __typename?: 'Mutation' }
+  & { getNews: (
     { __typename?: 'Result' }
     & { success?: Maybe<Array<(
       { __typename?: 'Response' }
@@ -878,9 +993,7 @@ export type DeleteTargetMutation = (
   ) }
 );
 
-export type AddTeamStatsMutationVariables = Exact<{
-  data: TeamStatsInput;
-}>;
+export type AddTeamStatsMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type AddTeamStatsMutation = (
@@ -933,6 +1046,40 @@ export type UpdateUserProfileImageMutation = (
   ) }
 );
 
+export type FoldersQueryVariables = Exact<{
+  data: FolderArgs;
+}>;
+
+
+export type FoldersQuery = (
+  { __typename?: 'Query' }
+  & { folders: Array<(
+    { __typename?: 'Folder' }
+    & Pick<Folder, 'id' | 'title' | 'creationTime' | 'updatedTime'>
+    & { notes?: Maybe<Array<(
+      { __typename?: 'Note' }
+      & Pick<Note, 'id' | 'title' | 'creationTime' | 'updatedTime'>
+    )>> }
+  )> }
+);
+
+export type FolderQueryVariables = Exact<{
+  data: FolderArgs;
+}>;
+
+
+export type FolderQuery = (
+  { __typename?: 'Query' }
+  & { folder: (
+    { __typename?: 'Folder' }
+    & Pick<Folder, 'id' | 'title' | 'creationTime' | 'updatedTime'>
+    & { notes?: Maybe<Array<(
+      { __typename?: 'Note' }
+      & Pick<Note, 'id' | 'title' | 'creationTime' | 'updatedTime'>
+    )>> }
+  ) }
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -941,6 +1088,21 @@ export type MeQuery = (
   & { me?: Maybe<(
     { __typename?: 'User' }
     & Pick<User, 'id' | 'username' | 'email' | 'profileImage' | 'isAdmin'>
+  )> }
+);
+
+export type NewsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type NewsQuery = (
+  { __typename?: 'Query' }
+  & { news: Array<(
+    { __typename?: 'News' }
+    & Pick<News, 'id' | 'title' | 'content' | 'originalSource' | 'updated'>
+    & { playerId?: Maybe<(
+      { __typename?: 'Player' }
+      & Pick<Player, 'id' | 'name'>
+    )> }
   )> }
 );
 
@@ -953,18 +1115,17 @@ export type NotesQuery = (
   { __typename?: 'Query' }
   & { notes: Array<(
     { __typename?: 'Note' }
-    & Pick<Note, 'id' | 'title' | 'body' | 'isPrivate' | 'creationTime'>
-    & { user: (
+    & Pick<Note, 'id' | 'title' | 'body' | 'isPrivate' | 'creationTime' | 'updatedTime'>
+    & { folder?: Maybe<(
+      { __typename?: 'Folder' }
+      & Pick<Folder, 'id' | 'title'>
+    )>, user: (
       { __typename?: 'User' }
       & Pick<User, 'id' | 'username' | 'profileImage'>
-    ), player: (
+    ), references?: Maybe<Array<(
       { __typename?: 'Player' }
-      & Pick<Player, 'id' | 'name' | 'position' | 'photoUrl'>
-      & { team?: Maybe<(
-        { __typename?: 'Team' }
-        & Pick<Team, 'id' | 'abbreviation'>
-      )> }
-    ) }
+      & Pick<Player, 'id' | 'name' | 'position'>
+    )>> }
   )> }
 );
 
@@ -977,18 +1138,17 @@ export type NoteQuery = (
   { __typename?: 'Query' }
   & { note: (
     { __typename?: 'Note' }
-    & Pick<Note, 'id' | 'title' | 'body' | 'isPrivate' | 'creationTime'>
-    & { user: (
+    & Pick<Note, 'id' | 'title' | 'body' | 'isPrivate' | 'creationTime' | 'updatedTime'>
+    & { folder?: Maybe<(
+      { __typename?: 'Folder' }
+      & Pick<Folder, 'id' | 'title'>
+    )>, user: (
       { __typename?: 'User' }
       & Pick<User, 'id' | 'username' | 'profileImage'>
-    ), player: (
+    ), references?: Maybe<Array<(
       { __typename?: 'Player' }
-      & Pick<Player, 'id' | 'name' | 'position' | 'photoUrl'>
-      & { team?: Maybe<(
-        { __typename?: 'Team' }
-        & Pick<Team, 'id' | 'abbreviation'>
-      )> }
-    ) }
+      & Pick<Player, 'id' | 'name' | 'position'>
+    )>> }
   ) }
 );
 
@@ -1001,24 +1161,30 @@ export type PlayersQuery = (
   { __typename?: 'Query' }
   & { players: Array<(
     { __typename?: 'Player' }
-    & Pick<Player, 'id' | 'name' | 'status' | 'position' | 'height' | 'weight' | 'averageDraftPosition' | 'depthChart' | 'birthDate' | 'photoUrl'>
-    & { projection?: Maybe<(
+    & Pick<Player, 'id' | 'name' | 'initialName' | 'status' | 'position' | 'height' | 'weight' | 'averageDraftPosition' | 'depthChart' | 'birthDate' | 'college' | 'photoUrl' | 'draftYear' | 'draftRound' | 'draftPick'>
+    & { stats?: Maybe<Array<(
+      { __typename?: 'Stats' }
+      & Pick<Stats, 'id' | 'gamesPlayed' | 'completions' | 'attempts' | 'passTd' | 'passYards' | 'interception' | 'carries' | 'rushYards' | 'touches' | 'rushTd' | 'fumbles' | 'targets' | 'receptions' | 'receivingYards' | 'receivingTd' | 'yardsPerCarry' | 'yardsPerReception' | 'offensiveTeamSnaps' | 'offensiveSnapsPlayed' | 'halfPPRTotalPoints' | 'pprTotalPoints' | 'totalPoints'>
+    )>>, projection?: Maybe<(
       { __typename?: 'Projection' }
       & Pick<Projection, 'id' | 'completions' | 'attempts' | 'passTd' | 'passYards' | 'interception' | 'carries' | 'rushYards' | 'rushTd' | 'fumbles' | 'receptions' | 'receivingYards' | 'receivingTd' | 'touches' | 'halfPPRTotalPoints' | 'pprTotalPoints' | 'totalPoints' | 'completionPercentage' | 'yardsPerAttempt' | 'yardsPerCarry' | 'yardsPerReception'>
     )>, team?: Maybe<(
       { __typename?: 'Team' }
-      & Pick<Team, 'id' | 'city' | 'nickname' | 'abbreviation' | 'fullName' | 'primaryColor' | 'secondaryColor'>
+      & Pick<Team, 'id' | 'city' | 'nickname' | 'abbreviation' | 'fullName' | 'primaryColor' | 'secondaryColor' | 'conference' | 'division' | 'headCoach' | 'offensiveCoordinator' | 'defensiveCoordinator' | 'offensiveScheme'>
       & { stats?: Maybe<(
         { __typename?: 'TeamStats' }
-        & Pick<TeamStats, 'id' | 'rank' | 'passRank' | 'rushRank' | 'plays' | 'yardsPerPlay' | 'turnovers' | 'passAttempts' | 'rushAttempt' | 'scorePercentage' | 'turnoverPercentage' | 'offensiveLineRank' | 'runningBackSoS'>
-      )>, stadium: (
+        & Pick<TeamStats, 'id' | 'timeOfPossession' | 'year' | 'firstDowns' | 'firstDownsByRushing' | 'firstDownsByPassing' | 'plays' | 'yards' | 'yardsPerPlay' | 'touchdowns' | 'rushingAttempts' | 'rushingYards' | 'rushingYardsPerAttempt' | 'rushingTouchdowns' | 'passingAttempts' | 'passingCompletions' | 'passingYards' | 'passingYardsPerAttempt' | 'passingTouchdowns' | 'thirdDownPercentage' | 'redzoneAttempts' | 'turnovers'>
+      )>, stadium?: Maybe<(
         { __typename?: 'Stadium' }
         & Pick<Stadium, 'id' | 'name' | 'type' | 'playingSurface' | 'city' | 'state' | 'country'>
-      ), standings: (
+      )>, standings?: Maybe<(
         { __typename?: 'Standings' }
         & Pick<Standings, 'wins' | 'losses' | 'ties' | 'conferenceWins' | 'conferenceTies' | 'conferenceLosses' | 'divisionWins' | 'divisionTies' | 'divisionLosses' | 'winPercentage'>
-      ) }
-    )> }
+      )> }
+    )>, news?: Maybe<Array<(
+      { __typename?: 'News' }
+      & Pick<News, 'id' | 'title' | 'content' | 'originalSource' | 'originalSourceUrl' | 'updated'>
+    )>> }
   )> }
 );
 
@@ -1031,24 +1197,30 @@ export type PlayerQuery = (
   { __typename?: 'Query' }
   & { player: (
     { __typename?: 'Player' }
-    & Pick<Player, 'id' | 'name' | 'status' | 'position' | 'height' | 'weight' | 'averageDraftPosition' | 'depthChart' | 'birthDate' | 'photoUrl'>
-    & { projection?: Maybe<(
+    & Pick<Player, 'id' | 'name' | 'status' | 'position' | 'height' | 'weight' | 'averageDraftPosition' | 'depthChart' | 'birthDate' | 'college' | 'photoUrl' | 'draftYear' | 'draftRound' | 'draftPick'>
+    & { stats?: Maybe<Array<(
+      { __typename?: 'Stats' }
+      & Pick<Stats, 'id' | 'gamesPlayed' | 'completions' | 'attempts' | 'passTd' | 'passYards' | 'completionPercentage' | 'interception' | 'carries' | 'rushYards' | 'yardsPerCarry' | 'yardsPerReception' | 'yardsPerAttempt' | 'touches' | 'rushTd' | 'fumbles' | 'targets' | 'receptions' | 'receivingYards' | 'receivingTd' | 'offensiveTeamSnaps' | 'offensiveSnapsPlayed' | 'halfPPRTotalPoints' | 'pprTotalPoints' | 'totalPoints'>
+    )>>, projection?: Maybe<(
       { __typename?: 'Projection' }
       & Pick<Projection, 'id' | 'completions' | 'attempts' | 'passTd' | 'passYards' | 'interception' | 'carries' | 'rushYards' | 'rushTd' | 'fumbles' | 'receptions' | 'receivingYards' | 'receivingTd' | 'touches' | 'halfPPRTotalPoints' | 'pprTotalPoints' | 'totalPoints' | 'completionPercentage' | 'yardsPerAttempt' | 'yardsPerCarry' | 'yardsPerReception'>
     )>, team?: Maybe<(
       { __typename?: 'Team' }
-      & Pick<Team, 'id' | 'city' | 'abbreviation' | 'fullName' | 'primaryColor' | 'secondaryColor'>
+      & Pick<Team, 'id' | 'city' | 'nickname' | 'abbreviation' | 'fullName' | 'primaryColor' | 'secondaryColor' | 'conference' | 'division' | 'headCoach' | 'offensiveCoordinator' | 'defensiveCoordinator' | 'offensiveScheme'>
       & { stats?: Maybe<(
         { __typename?: 'TeamStats' }
-        & Pick<TeamStats, 'id' | 'rank' | 'passRank' | 'rushRank' | 'plays' | 'yardsPerPlay' | 'turnovers' | 'passAttempts' | 'rushAttempt' | 'scorePercentage' | 'turnoverPercentage' | 'offensiveLineRank' | 'runningBackSoS'>
-      )>, stadium: (
+        & Pick<TeamStats, 'id' | 'timeOfPossession' | 'year' | 'firstDowns' | 'firstDownsByRushing' | 'firstDownsByPassing' | 'plays' | 'yards' | 'yardsPerPlay' | 'touchdowns' | 'rushingAttempts' | 'rushingYards' | 'rushingYardsPerAttempt' | 'rushingTouchdowns' | 'passingAttempts' | 'passingCompletions' | 'passingYards' | 'passingYardsPerAttempt' | 'passingTouchdowns' | 'thirdDownPercentage' | 'redzoneAttempts' | 'turnovers'>
+      )>, stadium?: Maybe<(
         { __typename?: 'Stadium' }
         & Pick<Stadium, 'id' | 'name' | 'type' | 'playingSurface' | 'city' | 'state' | 'country'>
-      ), standings: (
+      )>, standings?: Maybe<(
         { __typename?: 'Standings' }
         & Pick<Standings, 'wins' | 'losses' | 'ties' | 'conferenceWins' | 'conferenceTies' | 'conferenceLosses' | 'divisionWins' | 'divisionTies' | 'divisionLosses' | 'winPercentage'>
-      ) }
-    )> }
+      )> }
+    )>, news?: Maybe<Array<(
+      { __typename?: 'News' }
+      & Pick<News, 'id' | 'title' | 'content' | 'originalSource' | 'originalSourceUrl' | 'updated'>
+    )>> }
   ) }
 );
 
@@ -1112,14 +1284,14 @@ export type TeamsQuery = (
     & Pick<Team, 'id' | 'city' | 'nickname' | 'fullName' | 'abbreviation' | 'byeWeek' | 'logoUrl' | 'primaryColor' | 'secondaryColor' | 'conference' | 'division' | 'headCoach' | 'offensiveCoordinator' | 'defensiveCoordinator' | 'offensiveScheme' | 'defensiveScheme'>
     & { stats?: Maybe<(
       { __typename?: 'TeamStats' }
-      & Pick<TeamStats, 'rank' | 'passRank' | 'rushRank' | 'yards' | 'plays' | 'yardsPerPlay' | 'turnovers' | 'passAttempts' | 'passCompletions' | 'passYards' | 'passTd' | 'interception' | 'netYardsPerPass' | 'rushAttempt' | 'rushYards' | 'rushTd' | 'yardsPerRush' | 'scorePercentage' | 'turnoverPercentage' | 'offensiveLineRank' | 'runningBackSoS'>
-    )>, stadium: (
+      & Pick<TeamStats, 'id' | 'timeOfPossession' | 'year' | 'firstDowns' | 'firstDownsByRushing' | 'firstDownsByPassing' | 'plays' | 'yards' | 'yardsPerPlay' | 'touchdowns' | 'rushingAttempts' | 'rushingYards' | 'rushingYardsPerAttempt' | 'rushingTouchdowns' | 'passingAttempts' | 'passingCompletions' | 'passingYards' | 'passingYardsPerAttempt' | 'passingTouchdowns' | 'thirdDownPercentage' | 'redzoneAttempts' | 'turnovers'>
+    )>, stadium?: Maybe<(
       { __typename?: 'Stadium' }
       & Pick<Stadium, 'name' | 'type' | 'playingSurface' | 'city' | 'state' | 'country'>
-    ), standings: (
+    )>, standings?: Maybe<(
       { __typename?: 'Standings' }
       & Pick<Standings, 'wins' | 'losses' | 'ties' | 'conferenceWins' | 'conferenceTies' | 'conferenceLosses' | 'divisionWins' | 'divisionTies' | 'divisionLosses' | 'winPercentage'>
-    ) }
+    )> }
   )> }
 );
 
@@ -1130,20 +1302,20 @@ export type TeamQueryVariables = Exact<{
 
 export type TeamQuery = (
   { __typename?: 'Query' }
-  & { teams: Array<(
+  & { team: (
     { __typename?: 'Team' }
     & Pick<Team, 'id' | 'city' | 'nickname' | 'fullName' | 'abbreviation' | 'byeWeek' | 'logoUrl' | 'primaryColor' | 'secondaryColor' | 'conference' | 'division' | 'headCoach' | 'offensiveCoordinator' | 'defensiveCoordinator' | 'offensiveScheme' | 'defensiveScheme'>
     & { stats?: Maybe<(
       { __typename?: 'TeamStats' }
-      & Pick<TeamStats, 'id' | 'rank' | 'passRank' | 'rushRank' | 'yards' | 'plays' | 'yardsPerPlay' | 'turnovers' | 'passAttempts' | 'passCompletions' | 'passYards' | 'passTd' | 'interception' | 'netYardsPerPass' | 'rushAttempt' | 'rushYards' | 'rushTd' | 'yardsPerRush' | 'scorePercentage' | 'turnoverPercentage' | 'offensiveLineRank' | 'runningBackSoS'>
-    )>, stadium: (
+      & Pick<TeamStats, 'id' | 'timeOfPossession' | 'year' | 'firstDowns' | 'firstDownsByRushing' | 'firstDownsByPassing' | 'plays' | 'yards' | 'yardsPerPlay' | 'touchdowns' | 'rushingAttempts' | 'rushingYards' | 'rushingYardsPerAttempt' | 'rushingTouchdowns' | 'passingAttempts' | 'passingCompletions' | 'passingYards' | 'passingYardsPerAttempt' | 'passingTouchdowns' | 'thirdDownPercentage' | 'redzoneAttempts' | 'turnovers'>
+    )>, stadium?: Maybe<(
       { __typename?: 'Stadium' }
       & Pick<Stadium, 'id' | 'name' | 'type' | 'playingSurface' | 'city' | 'state' | 'country'>
-    ), standings: (
+    )>, standings?: Maybe<(
       { __typename?: 'Standings' }
       & Pick<Standings, 'wins' | 'losses' | 'ties' | 'conferenceWins' | 'conferenceTies' | 'conferenceLosses' | 'divisionWins' | 'divisionTies' | 'divisionLosses' | 'winPercentage'>
-    ) }
-  )> }
+    )> }
+  ) }
 );
 
 export type UsersQueryVariables = Exact<{
@@ -1194,7 +1366,9 @@ export const LoginDocument = gql`
         email
         username
         isAdmin
+        profileImage
       }
+      message
     }
     errors {
       message
@@ -1209,11 +1383,21 @@ export const LoginDocument = gql`
   export class LoginGQL extends Apollo.Mutation<LoginMutation, LoginMutationVariables> {
     document = LoginDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const RegisterDocument = gql`
     mutation register($data: RegisterInput!) {
   register(input: $data) {
     success {
+      user {
+        id
+        email
+        username
+        isAdmin
+        profileImage
+      }
       message
     }
     errors {
@@ -1229,10 +1413,20 @@ export const RegisterDocument = gql`
   export class RegisterGQL extends Apollo.Mutation<RegisterMutation, RegisterMutationVariables> {
     document = RegisterDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const LogoutDocument = gql`
     mutation logout {
-  logout
+  logout {
+    success {
+      message
+    }
+    errors {
+      message
+    }
+  }
 }
     `;
 
@@ -1242,10 +1436,13 @@ export const LogoutDocument = gql`
   export class LogoutGQL extends Apollo.Mutation<LogoutMutation, LogoutMutationVariables> {
     document = LogoutDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-export const ConfirmUserDocument = gql`
-    mutation confirmUser($data: String!) {
-  confirmUser(token: $data) {
+export const CreateFolderDocument = gql`
+    mutation createFolder($data: FolderArgs!) {
+  createFolder(input: $data) {
     success {
       message
     }
@@ -1259,13 +1456,16 @@ export const ConfirmUserDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class ConfirmUserGQL extends Apollo.Mutation<ConfirmUserMutation, ConfirmUserMutationVariables> {
-    document = ConfirmUserDocument;
+  export class CreateFolderGQL extends Apollo.Mutation<CreateFolderMutation, CreateFolderMutationVariables> {
+    document = CreateFolderDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-export const ForgotPasswordDocument = gql`
-    mutation forgotPassword($data: String!) {
-  forgotPassword(email: $data) {
+export const EditFolderDocument = gql`
+    mutation editFolder($data: FolderArgs!) {
+  editFolder(input: $data) {
     success {
       message
     }
@@ -1279,13 +1479,16 @@ export const ForgotPasswordDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class ForgotPasswordGQL extends Apollo.Mutation<ForgotPasswordMutation, ForgotPasswordMutationVariables> {
-    document = ForgotPasswordDocument;
+  export class EditFolderGQL extends Apollo.Mutation<EditFolderMutation, EditFolderMutationVariables> {
+    document = EditFolderDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
-export const ChangePasswordDocument = gql`
-    mutation changePassword($data: ChangePasswordInput!) {
-  changePassword(input: $data) {
+export const DeleteFolderDocument = gql`
+    mutation deleteFolder($data: FolderArgs!) {
+  deleteFolder(input: $data) {
     success {
       message
     }
@@ -1299,13 +1502,16 @@ export const ChangePasswordDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class ChangePasswordGQL extends Apollo.Mutation<ChangePasswordMutation, ChangePasswordMutationVariables> {
-    document = ChangePasswordDocument;
+  export class DeleteFolderGQL extends Apollo.Mutation<DeleteFolderMutation, DeleteFolderMutationVariables> {
+    document = DeleteFolderDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const CreateNoteDocument = gql`
-    mutation createNote($data: NoteInput!) {
-  createNote(input: $data) {
+    mutation createNote($data: NoteInput!, $references: [PlayerReferenceInput!]!) {
+  createNote(input: $data, references: $references) {
     success {
       message
     }
@@ -1322,6 +1528,32 @@ export const CreateNoteDocument = gql`
   export class CreateNoteGQL extends Apollo.Mutation<CreateNoteMutation, CreateNoteMutationVariables> {
     document = CreateNoteDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const EditNoteDocument = gql`
+    mutation editNote($data: NoteInput!) {
+  editNote(input: $data) {
+    success {
+      message
+    }
+    errors {
+      message
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class EditNoteGQL extends Apollo.Mutation<EditNoteMutation, EditNoteMutationVariables> {
+    document = EditNoteDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const DeleteNoteDocument = gql`
     mutation deleteNote($data: DeleteNoteInput!) {
@@ -1342,6 +1574,9 @@ export const DeleteNoteDocument = gql`
   export class DeleteNoteGQL extends Apollo.Mutation<DeleteNoteMutation, DeleteNoteMutationVariables> {
     document = DeleteNoteDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const UpdatePlayersDocument = gql`
     mutation updatePlayers {
@@ -1362,6 +1597,55 @@ export const UpdatePlayersDocument = gql`
   export class UpdatePlayersGQL extends Apollo.Mutation<UpdatePlayersMutation, UpdatePlayersMutationVariables> {
     document = UpdatePlayersDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddStatsDocument = gql`
+    mutation addStats {
+  addStats {
+    success {
+      message
+    }
+    errors {
+      message
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddStatsGQL extends Apollo.Mutation<AddStatsMutation, AddStatsMutationVariables> {
+    document = AddStatsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetNewsDocument = gql`
+    mutation getNews {
+  getNews {
+    success {
+      message
+    }
+    errors {
+      message
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GetNewsGQL extends Apollo.Mutation<GetNewsMutation, GetNewsMutationVariables> {
+    document = GetNewsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const CreateProjectionDocument = gql`
     mutation createProjection($data: ProjectionInput!) {
@@ -1382,6 +1666,9 @@ export const CreateProjectionDocument = gql`
   export class CreateProjectionGQL extends Apollo.Mutation<CreateProjectionMutation, CreateProjectionMutationVariables> {
     document = CreateProjectionDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const UpdateStadiumDocument = gql`
     mutation updateStadium {
@@ -1402,6 +1689,9 @@ export const UpdateStadiumDocument = gql`
   export class UpdateStadiumGQL extends Apollo.Mutation<UpdateStadiumMutation, UpdateStadiumMutationVariables> {
     document = UpdateStadiumDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const UpdateStandingsDocument = gql`
     mutation updateStandings {
@@ -1422,6 +1712,9 @@ export const UpdateStandingsDocument = gql`
   export class UpdateStandingsGQL extends Apollo.Mutation<UpdateStandingsMutation, UpdateStandingsMutationVariables> {
     document = UpdateStandingsDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const CreateTargetDocument = gql`
     mutation createTarget($data: TargetInput!) {
@@ -1442,6 +1735,9 @@ export const CreateTargetDocument = gql`
   export class CreateTargetGQL extends Apollo.Mutation<CreateTargetMutation, CreateTargetMutationVariables> {
     document = CreateTargetDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const DeleteTargetDocument = gql`
     mutation deleteTarget($data: DeleteTargetArgs!) {
@@ -1462,10 +1758,13 @@ export const DeleteTargetDocument = gql`
   export class DeleteTargetGQL extends Apollo.Mutation<DeleteTargetMutation, DeleteTargetMutationVariables> {
     document = DeleteTargetDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const AddTeamStatsDocument = gql`
-    mutation addTeamStats($data: TeamStatsInput!) {
-  addTeamStats(input: $data) {
+    mutation addTeamStats {
+  addTeamStats {
     success {
       message
     }
@@ -1482,6 +1781,9 @@ export const AddTeamStatsDocument = gql`
   export class AddTeamStatsGQL extends Apollo.Mutation<AddTeamStatsMutation, AddTeamStatsMutationVariables> {
     document = AddTeamStatsDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const UpdateTeamsDocument = gql`
     mutation updateTeams {
@@ -1502,6 +1804,9 @@ export const UpdateTeamsDocument = gql`
   export class UpdateTeamsGQL extends Apollo.Mutation<UpdateTeamsMutation, UpdateTeamsMutationVariables> {
     document = UpdateTeamsDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const UpdateUserProfileImageDocument = gql`
     mutation updateUserProfileImage($data: UpdateImageInput!) {
@@ -1522,6 +1827,63 @@ export const UpdateUserProfileImageDocument = gql`
   export class UpdateUserProfileImageGQL extends Apollo.Mutation<UpdateUserProfileImageMutation, UpdateUserProfileImageMutationVariables> {
     document = UpdateUserProfileImageDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const FoldersDocument = gql`
+    query folders($data: FolderArgs!) {
+  folders(input: $data) {
+    id
+    title
+    creationTime
+    updatedTime
+    notes {
+      id
+      title
+      creationTime
+      updatedTime
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class FoldersGQL extends Apollo.Query<FoldersQuery, FoldersQueryVariables> {
+    document = FoldersDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const FolderDocument = gql`
+    query folder($data: FolderArgs!) {
+  folder(input: $data) {
+    id
+    title
+    creationTime
+    updatedTime
+    notes {
+      id
+      title
+      creationTime
+      updatedTime
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class FolderGQL extends Apollo.Query<FolderQuery, FolderQueryVariables> {
+    document = FolderDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const MeDocument = gql`
     query me {
@@ -1541,6 +1903,35 @@ export const MeDocument = gql`
   export class MeGQL extends Apollo.Query<MeQuery, MeQueryVariables> {
     document = MeDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const NewsDocument = gql`
+    query news {
+  news {
+    id
+    title
+    content
+    originalSource
+    playerId {
+      id
+      name
+    }
+    updated
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class NewsGQL extends Apollo.Query<NewsQuery, NewsQueryVariables> {
+    document = NewsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const NotesDocument = gql`
     query notes($data: NoteArgs!) {
@@ -1548,22 +1939,22 @@ export const NotesDocument = gql`
     id
     title
     body
+    folder {
+      id
+      title
+    }
     isPrivate
     creationTime
+    updatedTime
     user {
       id
       username
       profileImage
     }
-    player {
+    references {
       id
       name
       position
-      photoUrl
-      team {
-        id
-        abbreviation
-      }
     }
   }
 }
@@ -1575,6 +1966,9 @@ export const NotesDocument = gql`
   export class NotesGQL extends Apollo.Query<NotesQuery, NotesQueryVariables> {
     document = NotesDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const NoteDocument = gql`
     query note($data: NoteArgs!) {
@@ -1582,22 +1976,22 @@ export const NoteDocument = gql`
     id
     title
     body
+    folder {
+      id
+      title
+    }
     isPrivate
     creationTime
+    updatedTime
     user {
       id
       username
       profileImage
     }
-    player {
+    references {
       id
       name
       position
-      photoUrl
-      team {
-        id
-        abbreviation
-      }
     }
   }
 }
@@ -1609,12 +2003,16 @@ export const NoteDocument = gql`
   export class NoteGQL extends Apollo.Query<NoteQuery, NoteQueryVariables> {
     document = NoteDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const PlayersDocument = gql`
     query players($data: PlayerArgs!) {
   players(input: $data) {
     id
     name
+    initialName
     status
     position
     height
@@ -1622,7 +2020,36 @@ export const PlayersDocument = gql`
     averageDraftPosition
     depthChart
     birthDate
+    college
     photoUrl
+    draftYear
+    draftRound
+    draftPick
+    stats {
+      id
+      gamesPlayed
+      completions
+      attempts
+      passTd
+      passYards
+      interception
+      carries
+      rushYards
+      touches
+      rushTd
+      fumbles
+      targets
+      receptions
+      receivingYards
+      receivingTd
+      yardsPerCarry
+      yardsPerReception
+      offensiveTeamSnaps
+      offensiveSnapsPlayed
+      halfPPRTotalPoints
+      pprTotalPoints
+      totalPoints
+    }
     projection {
       id
       completions
@@ -1654,20 +2081,35 @@ export const PlayersDocument = gql`
       fullName
       primaryColor
       secondaryColor
+      conference
+      division
+      headCoach
+      offensiveCoordinator
+      defensiveCoordinator
+      offensiveScheme
       stats {
         id
-        rank
-        passRank
-        rushRank
+        timeOfPossession
+        year
+        firstDowns
+        firstDownsByRushing
+        firstDownsByPassing
         plays
+        yards
         yardsPerPlay
+        touchdowns
+        rushingAttempts
+        rushingYards
+        rushingYardsPerAttempt
+        rushingTouchdowns
+        passingAttempts
+        passingCompletions
+        passingYards
+        passingYardsPerAttempt
+        passingTouchdowns
+        thirdDownPercentage
+        redzoneAttempts
         turnovers
-        passAttempts
-        rushAttempt
-        scorePercentage
-        turnoverPercentage
-        offensiveLineRank
-        runningBackSoS
       }
       stadium {
         id
@@ -1691,6 +2133,14 @@ export const PlayersDocument = gql`
         winPercentage
       }
     }
+    news {
+      id
+      title
+      content
+      originalSource
+      originalSourceUrl
+      updated
+    }
   }
 }
     `;
@@ -1701,6 +2151,9 @@ export const PlayersDocument = gql`
   export class PlayersGQL extends Apollo.Query<PlayersQuery, PlayersQueryVariables> {
     document = PlayersDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const PlayerDocument = gql`
     query player($data: PlayerArgs!) {
@@ -1714,7 +2167,38 @@ export const PlayerDocument = gql`
     averageDraftPosition
     depthChart
     birthDate
+    college
     photoUrl
+    draftYear
+    draftRound
+    draftPick
+    stats {
+      id
+      gamesPlayed
+      completions
+      attempts
+      passTd
+      passYards
+      completionPercentage
+      interception
+      carries
+      rushYards
+      yardsPerCarry
+      yardsPerReception
+      yardsPerAttempt
+      touches
+      rushTd
+      fumbles
+      targets
+      receptions
+      receivingYards
+      receivingTd
+      offensiveTeamSnaps
+      offensiveSnapsPlayed
+      halfPPRTotalPoints
+      pprTotalPoints
+      totalPoints
+    }
     projection {
       id
       completions
@@ -1741,24 +2225,40 @@ export const PlayerDocument = gql`
     team {
       id
       city
+      nickname
       abbreviation
       fullName
       primaryColor
       secondaryColor
+      conference
+      division
+      headCoach
+      offensiveCoordinator
+      defensiveCoordinator
+      offensiveScheme
       stats {
         id
-        rank
-        passRank
-        rushRank
+        timeOfPossession
+        year
+        firstDowns
+        firstDownsByRushing
+        firstDownsByPassing
         plays
+        yards
         yardsPerPlay
+        touchdowns
+        rushingAttempts
+        rushingYards
+        rushingYardsPerAttempt
+        rushingTouchdowns
+        passingAttempts
+        passingCompletions
+        passingYards
+        passingYardsPerAttempt
+        passingTouchdowns
+        thirdDownPercentage
+        redzoneAttempts
         turnovers
-        passAttempts
-        rushAttempt
-        scorePercentage
-        turnoverPercentage
-        offensiveLineRank
-        runningBackSoS
       }
       stadium {
         id
@@ -1782,6 +2282,14 @@ export const PlayerDocument = gql`
         winPercentage
       }
     }
+    news {
+      id
+      title
+      content
+      originalSource
+      originalSourceUrl
+      updated
+    }
   }
 }
     `;
@@ -1792,6 +2300,9 @@ export const PlayerDocument = gql`
   export class PlayerGQL extends Apollo.Query<PlayerQuery, PlayerQueryVariables> {
     document = PlayerDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const TargetsDocument = gql`
     query targets($data: TargetArgs!) {
@@ -1822,6 +2333,9 @@ export const TargetsDocument = gql`
   export class TargetsGQL extends Apollo.Query<TargetsQuery, TargetsQueryVariables> {
     document = TargetsDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const TargetDocument = gql`
     query target($data: TargetArgs!) {
@@ -1852,10 +2366,13 @@ export const TargetDocument = gql`
   export class TargetGQL extends Apollo.Query<TargetQuery, TargetQueryVariables> {
     document = TargetDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const TeamsDocument = gql`
     query teams($data: TeamArgs!) {
-  teams(input: {filterType: null}) {
+  teams(input: $data) {
     id
     city
     nickname
@@ -1873,27 +2390,28 @@ export const TeamsDocument = gql`
     offensiveScheme
     defensiveScheme
     stats {
-      rank
-      passRank
-      rushRank
-      yards
+      id
+      timeOfPossession
+      year
+      firstDowns
+      firstDownsByRushing
+      firstDownsByPassing
       plays
+      yards
       yardsPerPlay
+      touchdowns
+      rushingAttempts
+      rushingYards
+      rushingYardsPerAttempt
+      rushingTouchdowns
+      passingAttempts
+      passingCompletions
+      passingYards
+      passingYardsPerAttempt
+      passingTouchdowns
+      thirdDownPercentage
+      redzoneAttempts
       turnovers
-      passAttempts
-      passCompletions
-      passYards
-      passTd
-      interception
-      netYardsPerPass
-      rushAttempt
-      rushYards
-      rushTd
-      yardsPerRush
-      scorePercentage
-      turnoverPercentage
-      offensiveLineRank
-      runningBackSoS
     }
     stadium {
       name
@@ -1925,10 +2443,13 @@ export const TeamsDocument = gql`
   export class TeamsGQL extends Apollo.Query<TeamsQuery, TeamsQueryVariables> {
     document = TeamsDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const TeamDocument = gql`
     query team($data: TeamArgs!) {
-  teams(input: {filterType: null}) {
+  team(input: $data) {
     id
     city
     nickname
@@ -1947,27 +2468,27 @@ export const TeamDocument = gql`
     defensiveScheme
     stats {
       id
-      rank
-      passRank
-      rushRank
-      yards
+      timeOfPossession
+      year
+      firstDowns
+      firstDownsByRushing
+      firstDownsByPassing
       plays
+      yards
       yardsPerPlay
+      touchdowns
+      rushingAttempts
+      rushingYards
+      rushingYardsPerAttempt
+      rushingTouchdowns
+      passingAttempts
+      passingCompletions
+      passingYards
+      passingYardsPerAttempt
+      passingTouchdowns
+      thirdDownPercentage
+      redzoneAttempts
       turnovers
-      passAttempts
-      passCompletions
-      passYards
-      passTd
-      interception
-      netYardsPerPass
-      rushAttempt
-      rushYards
-      rushTd
-      yardsPerRush
-      scorePercentage
-      turnoverPercentage
-      offensiveLineRank
-      runningBackSoS
     }
     stadium {
       id
@@ -2000,6 +2521,9 @@ export const TeamDocument = gql`
   export class TeamGQL extends Apollo.Query<TeamQuery, TeamQueryVariables> {
     document = TeamDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const UsersDocument = gql`
     query users($data: UserArgs!) {
@@ -2018,6 +2542,9 @@ export const UsersDocument = gql`
   export class UsersGQL extends Apollo.Query<UsersQuery, UsersQueryVariables> {
     document = UsersDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const AdminUsersDocument = gql`
     query adminUsers($data: UserArgs!) {
@@ -2042,6 +2569,9 @@ export const AdminUsersDocument = gql`
   export class AdminUsersGQL extends Apollo.Query<AdminUsersQuery, AdminUsersQueryVariables> {
     document = AdminUsersDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 export const UserDocument = gql`
     query user($data: UserArgs!) {
@@ -2060,6 +2590,9 @@ export const UserDocument = gql`
   export class UserGQL extends Apollo.Query<UserQuery, UserQueryVariables> {
     document = UserDocument;
     
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
   }
 
   type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
@@ -2082,12 +2615,15 @@ export const UserDocument = gql`
       private loginGql: LoginGQL,
       private registerGql: RegisterGQL,
       private logoutGql: LogoutGQL,
-      private confirmUserGql: ConfirmUserGQL,
-      private forgotPasswordGql: ForgotPasswordGQL,
-      private changePasswordGql: ChangePasswordGQL,
+      private createFolderGql: CreateFolderGQL,
+      private editFolderGql: EditFolderGQL,
+      private deleteFolderGql: DeleteFolderGQL,
       private createNoteGql: CreateNoteGQL,
+      private editNoteGql: EditNoteGQL,
       private deleteNoteGql: DeleteNoteGQL,
       private updatePlayersGql: UpdatePlayersGQL,
+      private addStatsGql: AddStatsGQL,
+      private getNewsGql: GetNewsGQL,
       private createProjectionGql: CreateProjectionGQL,
       private updateStadiumGql: UpdateStadiumGQL,
       private updateStandingsGql: UpdateStandingsGQL,
@@ -2096,7 +2632,10 @@ export const UserDocument = gql`
       private addTeamStatsGql: AddTeamStatsGQL,
       private updateTeamsGql: UpdateTeamsGQL,
       private updateUserProfileImageGql: UpdateUserProfileImageGQL,
+      private foldersGql: FoldersGQL,
+      private folderGql: FolderGQL,
       private meGql: MeGQL,
+      private newsGql: NewsGQL,
       private notesGql: NotesGQL,
       private noteGql: NoteGQL,
       private playersGql: PlayersGQL,
@@ -2122,20 +2661,24 @@ export const UserDocument = gql`
       return this.logoutGql.mutate(variables, options)
     }
     
-    confirmUser(variables: ConfirmUserMutationVariables, options?: MutationOptionsAlone<ConfirmUserMutation, ConfirmUserMutationVariables>) {
-      return this.confirmUserGql.mutate(variables, options)
+    createFolder(variables: CreateFolderMutationVariables, options?: MutationOptionsAlone<CreateFolderMutation, CreateFolderMutationVariables>) {
+      return this.createFolderGql.mutate(variables, options)
     }
     
-    forgotPassword(variables: ForgotPasswordMutationVariables, options?: MutationOptionsAlone<ForgotPasswordMutation, ForgotPasswordMutationVariables>) {
-      return this.forgotPasswordGql.mutate(variables, options)
+    editFolder(variables: EditFolderMutationVariables, options?: MutationOptionsAlone<EditFolderMutation, EditFolderMutationVariables>) {
+      return this.editFolderGql.mutate(variables, options)
     }
     
-    changePassword(variables: ChangePasswordMutationVariables, options?: MutationOptionsAlone<ChangePasswordMutation, ChangePasswordMutationVariables>) {
-      return this.changePasswordGql.mutate(variables, options)
+    deleteFolder(variables: DeleteFolderMutationVariables, options?: MutationOptionsAlone<DeleteFolderMutation, DeleteFolderMutationVariables>) {
+      return this.deleteFolderGql.mutate(variables, options)
     }
     
     createNote(variables: CreateNoteMutationVariables, options?: MutationOptionsAlone<CreateNoteMutation, CreateNoteMutationVariables>) {
       return this.createNoteGql.mutate(variables, options)
+    }
+    
+    editNote(variables: EditNoteMutationVariables, options?: MutationOptionsAlone<EditNoteMutation, EditNoteMutationVariables>) {
+      return this.editNoteGql.mutate(variables, options)
     }
     
     deleteNote(variables: DeleteNoteMutationVariables, options?: MutationOptionsAlone<DeleteNoteMutation, DeleteNoteMutationVariables>) {
@@ -2144,6 +2687,14 @@ export const UserDocument = gql`
     
     updatePlayers(variables?: UpdatePlayersMutationVariables, options?: MutationOptionsAlone<UpdatePlayersMutation, UpdatePlayersMutationVariables>) {
       return this.updatePlayersGql.mutate(variables, options)
+    }
+    
+    addStats(variables?: AddStatsMutationVariables, options?: MutationOptionsAlone<AddStatsMutation, AddStatsMutationVariables>) {
+      return this.addStatsGql.mutate(variables, options)
+    }
+    
+    getNews(variables?: GetNewsMutationVariables, options?: MutationOptionsAlone<GetNewsMutation, GetNewsMutationVariables>) {
+      return this.getNewsGql.mutate(variables, options)
     }
     
     createProjection(variables: CreateProjectionMutationVariables, options?: MutationOptionsAlone<CreateProjectionMutation, CreateProjectionMutationVariables>) {
@@ -2166,7 +2717,7 @@ export const UserDocument = gql`
       return this.deleteTargetGql.mutate(variables, options)
     }
     
-    addTeamStats(variables: AddTeamStatsMutationVariables, options?: MutationOptionsAlone<AddTeamStatsMutation, AddTeamStatsMutationVariables>) {
+    addTeamStats(variables?: AddTeamStatsMutationVariables, options?: MutationOptionsAlone<AddTeamStatsMutation, AddTeamStatsMutationVariables>) {
       return this.addTeamStatsGql.mutate(variables, options)
     }
     
@@ -2178,12 +2729,36 @@ export const UserDocument = gql`
       return this.updateUserProfileImageGql.mutate(variables, options)
     }
     
+    folders(variables: FoldersQueryVariables, options?: QueryOptionsAlone<FoldersQueryVariables>) {
+      return this.foldersGql.fetch(variables, options)
+    }
+    
+    foldersWatch(variables: FoldersQueryVariables, options?: WatchQueryOptionsAlone<FoldersQueryVariables>) {
+      return this.foldersGql.watch(variables, options)
+    }
+    
+    folder(variables: FolderQueryVariables, options?: QueryOptionsAlone<FolderQueryVariables>) {
+      return this.folderGql.fetch(variables, options)
+    }
+    
+    folderWatch(variables: FolderQueryVariables, options?: WatchQueryOptionsAlone<FolderQueryVariables>) {
+      return this.folderGql.watch(variables, options)
+    }
+    
     me(variables?: MeQueryVariables, options?: QueryOptionsAlone<MeQueryVariables>) {
       return this.meGql.fetch(variables, options)
     }
     
     meWatch(variables?: MeQueryVariables, options?: WatchQueryOptionsAlone<MeQueryVariables>) {
       return this.meGql.watch(variables, options)
+    }
+    
+    news(variables?: NewsQueryVariables, options?: QueryOptionsAlone<NewsQueryVariables>) {
+      return this.newsGql.fetch(variables, options)
+    }
+    
+    newsWatch(variables?: NewsQueryVariables, options?: WatchQueryOptionsAlone<NewsQueryVariables>) {
+      return this.newsGql.watch(variables, options)
     }
     
     notes(variables: NotesQueryVariables, options?: QueryOptionsAlone<NotesQueryVariables>) {

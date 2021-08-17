@@ -1,5 +1,6 @@
 import { Resolver, Mutation, UseMiddleware, Query } from 'type-graphql';
-import { Stadium } from '../../entity';
+import * as https from 'https';
+import { Stadium } from '../../entity/Stadium';
 import { Result } from '../../shared';
 import { logger } from '../../middleware';
 import { getRepository } from 'typeorm';
@@ -21,8 +22,13 @@ export class stadiumResolver {
     async updateStadiums(): Promise<Result> {
 
         try {
+            const httpsAgent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
+
             const response = await axios
-                .get(`https://api.sportsdata.io/v3/nfl/scores/json/Stadiums?key=${process.env.SPORTS_DATA_KEY}`);
+                .get(`https://fly.sportsdata.io/v3/nfl/scores/json/Stadiums?key=${process.env.SPORTS_DATA_KEY}`, { httpsAgent });
 
             const stadiumList = response.data;
 

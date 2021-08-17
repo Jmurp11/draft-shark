@@ -1,13 +1,15 @@
 import { Resolver, Query, Mutation, Arg, UseMiddleware, Int, Ctx } from 'type-graphql';
-import { Note } from '../../entity';
+import { Note } from '../../entity/Note';
 import { Result, MyContext } from '../../shared';
-import { NoteInput } from './inputs/NoteInput';
+import { NoteInput, PlayerReferenceInput } from './inputs/NoteInput';
 import { getRepository, SelectQueryBuilder } from 'typeorm';
 import { isAuth, logger } from '../../middleware';
 import { DeleteNoteInput } from './inputs/DeleteNoteInput';
 import { filterQuery } from '../../utils/filterQuery';
 import { NoteArgs } from './inputs/NoteArgs';
 import { NoteService } from './services/note-service';
+import { Folder } from '../../entity/Folder';
+import { NoteReference } from '../../entity/NoteReference';
 
 @Resolver()
 export class NoteResolver {
@@ -15,13 +17,15 @@ export class NoteResolver {
         private _notes: NoteService
     ) { }
 
-    @UseMiddleware()
+    @UseMiddleware(isAuth, logger)
     @Query(() => [Note])
     async notes(
         @Arg('input') {
             filterType,
+            id,
             user,
             player,
+            folder,
             skip,
             take
         }: NoteArgs,
@@ -31,8 +35,8 @@ export class NoteResolver {
         const query: SelectQueryBuilder<Note> = getRepository(Note)
             .createQueryBuilder('notes')
             .leftJoinAndSelect('notes.user', 'user')
-            .leftJoinAndSelect('notes.player', 'player')
-            .leftJoinAndSelect('player.team', 'team')
+            .leftJoinAndSelect('notes.folder', 'folder')
+            .leftJoinAndSelect('notes.noteReference', 'notesReferences')
             .take(take)
             .skip(skip)
             .orderBy('notes.creationTime', 'DESC')
@@ -40,17 +44,36 @@ export class NoteResolver {
         switch (filterType) {
             case 'byCurrentUser':
                 if (ctx.payload?.userId) {
-                    console.log('Notes: ' + ctx.payload.userId);
                     where = await this._notes.byCurrentUser(ctx);
                     return filterQuery(query, where).getMany();
                 }
                 return [];
+            case 'byCurrentUserAndNoFolder':
+                if (ctx.payload?.userId) {
+                    where = await this._notes.byCurrentUserAndNoFolder(ctx);
+                    return filterQuery(query, where).getMany();
+                }
+                return [];
+            case 'byCurrentUserAndPlayer':
+                if (ctx.payload?.userId) {
+                    where = await this._notes.byCurrentUserAndPlayer(ctx, player);
+                    return filterQuery(query, where).getMany();
+                }
+                return [];
+            case 'byFolder':
+                where = await this._notes.byFolder(folder);
+                return filterQuery(query, where).getMany();
+            case 'byId':
+                where = await this._notes.byId(id);
+                return filterQuery(query, where).getMany();
             case 'byUser':
                 where = await this._notes.byUser(user);
                 return filterQuery(query, where).getMany();
             case 'byPlayer':
-                console.log(player);
                 where = await this._notes.byPlayer(player);
+                return filterQuery(query, where).getMany();
+            case 'byUserAndPlayer':
+                where = await this._notes.byUserAndPlayer(user, player);
                 return filterQuery(query, where).getMany();
             default:
                 return query.getMany()
@@ -61,8 +84,7 @@ export class NoteResolver {
     @Query(() => Note)
     async note(
         @Arg('input') {
-            user,
-            player
+            id
         }: NoteArgs
     ) {
         let where;
@@ -70,10 +92,10 @@ export class NoteResolver {
         const query: SelectQueryBuilder<Note> = getRepository(Note)
             .createQueryBuilder('notes')
             .leftJoinAndSelect('notes.user', 'user')
-            .leftJoinAndSelect('notes.player', 'player')
-            .leftJoinAndSelect('player.team', 'team');
+            .leftJoinAndSelect('notes.folder', 'folder')
+            .leftJoinAndSelect('notes.noteReference', 'notesReferences');
 
-        where = await this._notes.byUserAndPlayer(user, player);
+        where = await this._notes.byId(id);
         return filterQuery(query, where).getOne();
     }
 
@@ -93,18 +115,19 @@ export class NoteResolver {
     async createNote(
         @Ctx() ctx: MyContext,
         @Arg('input') {
-            player,
+            folder,
             title,
             body,
             isPrivate
-        }: NoteInput
+        }: NoteInput,
+        @Arg('references', _type => [PlayerReferenceInput]) references: PlayerReferenceInput[]
     ): Promise<Result> {
         const user = ctx.payload?.userId;
 
         const titleExists = await Note.findOne({
             where: {
                 user,
-                player,
+                folder,
                 title
             },
             select: ['id']
@@ -115,28 +138,114 @@ export class NoteResolver {
                 errors: [
                     {
                         path: 'note',
-                        message: 'User has already created note with this title for this player!'
+                        message: 'User has already created note with this title!'
                     }
                 ]
             }
         }
 
         const creationTime = new Date().toISOString();
+        const updatedTime = new Date().toISOString();
 
-        await Note.create({
+        const createdNote = await Note.create({
             user,
-            player,
+            folder,
             creationTime,
+            updatedTime,
             title,
             body,
             isPrivate
         }).save();
+
+        references.forEach(async (player) => {
+            const playerId = player.player;
+            await NoteReference.create({
+                playerId,
+                noteId: createdNote.id
+            }).save();
+        });
+
+        if (folder) {
+            await Folder.update({ id: folder }, {
+                updatedTime
+            });
+        }
 
         return {
             success: [
                 {
                     path: 'note',
                     message: 'Successfully added note!'
+                }
+            ]
+        }
+    }
+
+    @UseMiddleware(isAuth, logger)
+    @Mutation(() => Result)
+    async editNote(
+        @Ctx() ctx: MyContext,
+        @Arg('input') {
+            id,
+            folder,
+            title,
+            body,
+            isPrivate
+        }: NoteInput
+    ): Promise<Result> {
+        const user = ctx.payload?.userId;
+
+        const note = await Note.findOne({
+            where: {
+                id
+            }
+        });
+
+        if (note?.user !== user) {
+            return {
+                errors: [
+                    {
+                        path: 'note',
+                        message: 'This user cannot edit this note!'
+                    }
+                ]
+            }
+        }
+
+        if (!note) {
+            return {
+                errors: [
+                    {
+                        path: 'note',
+                        message: 'This note no longer exists!'
+                    }
+                ]
+            }
+        }
+
+        const updatedTime = new Date().toISOString();
+
+
+        await Note.update({ id },
+            {
+                folder,
+                title,
+                body,
+                updatedTime,
+                isPrivate
+            });
+
+        if (folder) {
+            await Folder.update({ id: folder }, {
+                updatedTime
+            });
+        }
+
+        return {
+            success: [
+                {
+                    path: 'note',
+                    message: 'Successfully updated note!'
                 }
             ]
         }
@@ -154,7 +263,7 @@ export class NoteResolver {
             where: {
                 id
             },
-            select: ['id', 'user']
+            select: ['id', 'user', 'folder']
         });
 
         if (!note!.id) {
@@ -177,6 +286,14 @@ export class NoteResolver {
                     }
                 ]
             }
+        }
+
+        if (note!.folder) {
+            const updatedTime = new Date().toISOString();
+
+            await Folder.update({ id: note!.folder }, {
+                updatedTime
+            });
         }
 
         await Note.delete({ id });

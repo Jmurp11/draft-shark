@@ -3,17 +3,15 @@ import { CommonModule } from '@angular/common';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { GraphQLModule } from '../graphql.module';
-import { AppMaterialModule } from '../app-material.module';
 import { RouterModule } from '@angular/router';
-import { LoadingComponent } from './loading/loading.component';
+import { IonicModule } from '@ionic/angular';
+import { CreateNoteComponent } from './create-note/create-note.component';
 
 @NgModule({
-  declarations: [
-    LoadingComponent
-  ],
+  declarations: [CreateNoteComponent],
   imports: [
-    AppMaterialModule,
     CommonModule,
+    IonicModule,
     FlexLayoutModule,
     FormsModule,
     GraphQLModule,
@@ -21,12 +19,11 @@ import { LoadingComponent } from './loading/loading.component';
     RouterModule
   ],
   exports: [
-    AppMaterialModule,
     CommonModule,
+    CreateNoteComponent,
     FlexLayoutModule,
     FormsModule,
     GraphQLModule,
-    LoadingComponent,
     ReactiveFormsModule
   ]
 })

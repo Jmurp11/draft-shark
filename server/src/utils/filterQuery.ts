@@ -15,6 +15,8 @@ export interface FieldOptions {
     notContains?: any;
     notStartsWith?: any;
     notEndsWith?: any;
+    isNull?: any;
+    isNotNull?: any;
 }
 
 export interface Fields {
@@ -75,27 +77,35 @@ const handleArgs = (
                     break;
                 }
                 case "contains": {
-                    query[andOr](`${fieldName} LIKE '%${value}%'`);
+                    query[andOr](`${fieldName} ILIKE '%${value}%'`);
                     break;
                 }
                 case "notContains": {
-                    query[andOr](`${fieldName} NOT LIKE '%${value}%'`);
+                    query[andOr](`${fieldName} NOT ILIKE '%${value}%'`);
                     break;
                 }
                 case "startsWith": {
-                    query[andOr](`${fieldName} LIKE '${value}%'`);
+                    query[andOr](`${fieldName} ILIKE '${value}%'`);
                     break;
                 }
                 case "notStartsWith": {
-                    query[andOr](`${fieldName} NOT LIKE '${value}%'`);
+                    query[andOr](`${fieldName} NOT ILIKE '${value}%'`);
                     break;
                 }
                 case "endsWith": {
-                    query[andOr](`${fieldName} LIKE '%${value}'`);
+                    query[andOr](`${fieldName} ILIKE '%${value}'`);
                     break;
                 }
                 case "notEndsWith": {
-                    query[andOr](`${fieldName} LIKE '%${value}'`);
+                    query[andOr](`${fieldName} ILIKE '%${value}'`);
+                    break;
+                }
+                case "isNull": {
+                    query[andOr](`${fieldName} is NULL`);
+                    break;
+                }
+                case "isNotNull": {
+                    query[andOr](`${fieldName} is NOT NULL`);
                     break;
                 }
                 default: {

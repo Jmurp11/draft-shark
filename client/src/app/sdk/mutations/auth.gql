@@ -6,7 +6,9 @@ mutation login($data: LoginInput!) {
         email
         username
         isAdmin
+        profileImage
       }
+      message
     }
     errors {
       message
@@ -17,6 +19,13 @@ mutation login($data: LoginInput!) {
 mutation register($data: RegisterInput!) {
   register(input: $data) {
     success {
+      user {
+        id
+        email
+        username
+        isAdmin
+        profileImage
+      }
       message
     }
     errors {
@@ -26,33 +35,7 @@ mutation register($data: RegisterInput!) {
 }
 
 mutation logout {
-  logout
-}
-
-mutation confirmUser($data: String!) {
-  confirmUser(token: $data) {
-    success {
-      message
-    }
-    errors {
-      message
-    }
-  }
-}
-
-mutation forgotPassword($data: String!) {
-  forgotPassword(email: $data) {
-    success {
-      message
-    }
-    errors {
-      message
-    }
-  }
-}
-
-mutation changePassword($data: ChangePasswordInput!) {
-  changePassword(input: $data) {
+  logout {
     success {
       message
     }

@@ -1,6 +1,7 @@
-import { Resolver, Query, Mutation, Arg, UseMiddleware, Ctx } from 'type-graphql';
-import { Player } from '../../entity';
-import { Result, MyContext } from '../../shared';
+import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
+import * as https from 'https';
+import { Player } from '../../entity/Player';
+import { Result } from '../../shared';
 import { getRepository, SelectQueryBuilder } from 'typeorm';
 import { filterQuery } from '../../utils/filterQuery';
 import { PlayerArgs } from './inputs/PlayerArgs';
@@ -18,9 +19,9 @@ export class PlayerResolver {
     @UseMiddleware(logger)
     @Query(() => [Player])
     async players(
-        @Ctx() ctx: MyContext,
         @Arg('input', { nullable: true }) {
             filterType,
+            lastName,
             team,
             position,
             status,
@@ -30,26 +31,29 @@ export class PlayerResolver {
     ): Promise<Player[] | undefined> {
         let where;
 
-        console.log('Context', ctx.payload?.userId);
         const query: SelectQueryBuilder<Player> = getRepository(Player)
             .createQueryBuilder('players')
             .leftJoinAndSelect('players.team', 'team')
             .leftJoinAndSelect('team.stadium', 'stadium')
-            .leftJoinAndSelect('team.stats', 'stats')
+            .leftJoinAndSelect('team.stats', 'teamstats')
             .leftJoinAndSelect('team.standings', 'standings')
             .leftJoinAndSelect('players.projection', 'projection')
-            .leftJoinAndSelect('players.notes', 'notes')
+            .leftJoinAndSelect('players.playerConnection', 'pc')
+            .leftJoinAndSelect('players.news', 'news')
+            .leftJoinAndSelect('players.stats', 'stats')
             .take(take)
             .skip(skip)
             .orderBy('players.averageDraftPosition', 'ASC')
 
         switch (filterType) {
             case 'byTeam':
-                console.log('byTeam', await this._player.byTeam(team));
                 where = await this._player.byTeam(team);
                 return filterQuery(query, where).getMany();
             case 'byPosition':
                 where = await this._player.byPosition(position);
+                return filterQuery(query, where).getMany();
+            case 'byName':
+                where = await this._player.byName(lastName);
                 return filterQuery(query, where).getMany();
             case 'byStatus':
                 where = await this._player.byStatus(status);
@@ -69,10 +73,7 @@ export class PlayerResolver {
     @Query(() => Player)
     async player(@Arg('input') {
         filterType,
-        id,
-        firstName,
-        lastName,
-        position
+        id
     }: PlayerArgs): Promise<Player | undefined> {
         let where;
 
@@ -80,38 +81,38 @@ export class PlayerResolver {
             .createQueryBuilder('players')
             .leftJoinAndSelect('players.team', 'team')
             .leftJoinAndSelect('team.stadium', 'stadium')
-            .leftJoinAndSelect('team.stats', 'stats')
+            .leftJoinAndSelect('team.stats', 'teamstats')
             .leftJoinAndSelect('team.standings', 'standings')
             .leftJoinAndSelect('players.projection', 'projection')
-            .leftJoinAndSelect('players.notes', 'notes');
-
+            .leftJoinAndSelect('players.playerConnection', 'pc')
+            .leftJoinAndSelect('players.news', 'news')
+            .leftJoinAndSelect('players.stats', 'stats')
 
         switch (filterType) {
             case 'byId':
                 where = await this._player.byId(id);
-                return filterQuery(query, where).getOne();
-            case 'byName':
-                where = await this._player.byName(firstName, lastName);
-                return filterQuery(query, where).getOne();
-            case 'byNameAndPosition':
-                where = await this._player.byNameAndPosition(firstName, lastName, position);
                 return filterQuery(query, where).getOne();
             default:
                 return undefined;
         }
     }
 
+    // TODO: SHOULD BE ISADMIN, ISAUTH
     @UseMiddleware(logger)
     @Mutation(() => Result)
     async updatePlayers(): Promise<Result> {
 
         try {
+            const httpsAgent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
+
             const response = await axios
-                .get(`https://api.sportsdata.io/v3/nfl/scores/json/Players?key=${process.env.SPORTS_DATA_KEY}`);
+                .get(`https://fly.sportsdata.io/v3/nfl/scores/json/Players?key=${process.env.SPORTS_DATA_KEY}`, { httpsAgent });
 
-            const playerList = response.data;
 
-            playerList.forEach(async (player: any) => {
+            response.data.forEach(async (player: any) => {
                 if (player.PositionCategory === 'OFF' &&
                     (player.Position === 'QB') ||
                     (player.Position === 'RB') ||
@@ -126,7 +127,6 @@ export class PlayerResolver {
 
 
                     if (playerExists) {
-                        console.log('update');
                         await Player.update(
                             {
                                 id: player.PlayerID
@@ -140,7 +140,6 @@ export class PlayerResolver {
                             averageDraftPosition: player.AverageDraftPosition
                         });
                     } else {
-                        console.log('create');
                         await Player.create({
                             id: player.PlayerID,
                             firstName: player.FirstName,
