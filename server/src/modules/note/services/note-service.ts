@@ -150,4 +150,31 @@ export class NoteService {
 
         return filters;
     }
+
+    async byCurrentUserAndPlayer(ctx: MyContext, player: number): Promise<Where | undefined> {
+        const userFields: Fields = {
+            fieldTable: 'notes',
+            fieldName: 'user',
+            fieldOptions: {
+                is: `'${ctx.payload?.userId}'`
+            }
+        };
+
+        const playerFields: Fields = {
+            fieldTable: 'notesReferences',
+            fieldName: 'player',
+            fieldOptions: {
+                is: player
+            }
+        };
+
+        const filters: Where = {
+            AND: [
+                userFields,
+                playerFields
+            ]
+        }
+
+        return filters;
+    }
 }

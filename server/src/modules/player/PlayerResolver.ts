@@ -1,4 +1,5 @@
 import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
+import * as https from 'https';
 import { Player } from '../../entity/Player';
 import { Result } from '../../shared';
 import { getRepository, SelectQueryBuilder } from 'typeorm';
@@ -34,17 +35,18 @@ export class PlayerResolver {
             .createQueryBuilder('players')
             .leftJoinAndSelect('players.team', 'team')
             .leftJoinAndSelect('team.stadium', 'stadium')
-            .leftJoinAndSelect('team.stats', 'stats')
+            .leftJoinAndSelect('team.stats', 'teamstats')
             .leftJoinAndSelect('team.standings', 'standings')
             .leftJoinAndSelect('players.projection', 'projection')
             .leftJoinAndSelect('players.playerConnection', 'pc')
+            .leftJoinAndSelect('players.news', 'news')
+            .leftJoinAndSelect('players.stats', 'stats')
             .take(take)
             .skip(skip)
             .orderBy('players.averageDraftPosition', 'ASC')
 
         switch (filterType) {
             case 'byTeam':
-                console.log('byTeam', await this._player.byTeam(team));
                 where = await this._player.byTeam(team);
                 return filterQuery(query, where).getMany();
             case 'byPosition':
@@ -79,10 +81,12 @@ export class PlayerResolver {
             .createQueryBuilder('players')
             .leftJoinAndSelect('players.team', 'team')
             .leftJoinAndSelect('team.stadium', 'stadium')
-            .leftJoinAndSelect('team.stats', 'stats')
+            .leftJoinAndSelect('team.stats', 'teamstats')
             .leftJoinAndSelect('team.standings', 'standings')
             .leftJoinAndSelect('players.projection', 'projection')
             .leftJoinAndSelect('players.playerConnection', 'pc')
+            .leftJoinAndSelect('players.news', 'news')
+            .leftJoinAndSelect('players.stats', 'stats')
 
         switch (filterType) {
             case 'byId':
@@ -99,12 +103,16 @@ export class PlayerResolver {
     async updatePlayers(): Promise<Result> {
 
         try {
+            const httpsAgent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
+
             const response = await axios
-                .get(`https://api.sportsdata.io/v3/nfl/scores/json/Players?key=${process.env.SPORTS_DATA_KEY}`);
+                .get(`https://fly.sportsdata.io/v3/nfl/scores/json/Players?key=${process.env.SPORTS_DATA_KEY}`, { httpsAgent });
 
-            const playerList = response.data;
 
-            playerList.forEach(async (player: any) => {
+            response.data.forEach(async (player: any) => {
                 if (player.PositionCategory === 'OFF' &&
                     (player.Position === 'QB') ||
                     (player.Position === 'RB') ||

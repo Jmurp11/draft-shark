@@ -1,0 +1,43 @@
+<ion-header>
+
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <div class="header">
+    <div class="image-container">
+      <img class="image" [src]="player?.photoUrl" />
+    </div>
+    <div class="title bold">{{ player?.name }}</div>
+    <div class="sub-title bold">{{player?.position}} - {{ player?.team.abbreviation }}
+    </div>
+    <div style="padding: .3125em">
+      <span class="title float-left">
+        {{ status?.status }}
+        <ion-icon [name]="status?.icon" [color]="status?.color"></ion-icon>
+      </span>
+      <span class="float-right">
+        <span class="title">
+          {{ player?.stats[0]?.halfPPRTotalPoints / player?.stats[0]?.gamesPlayed | number : '1.2-2'}}
+        </span>
+        <span class="sub-title">
+          ppg
+        </span>
+      </span>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content>
+
+  <app-stat-slides [slides]="playerSlides"></app-stat-slides>
+
+  <app-stat-slides [slides]="teamSlides"></app-stat-slides>
+
+  <app-player-news [news]="news"></app-player-news>
+
+  <app-notes-slides [notes]="notes"></app-notes-slides>
+
+</ion-content>

@@ -1,0 +1,13 @@
+query news {
+  news {
+    id
+    title
+    content
+    originalSource
+    playerId {
+      id
+      name
+    }
+    updated
+  }
+}

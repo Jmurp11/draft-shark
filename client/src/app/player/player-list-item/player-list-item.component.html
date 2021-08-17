@@ -1,0 +1,14 @@
+<ion-item (click)="navigateToPlayerPage(player.id)">
+  <ion-avatar slot="start">
+    <img [src]="player.photoUrl">
+  </ion-avatar>
+  <ion-label>
+    <div style="display: inline-block; width: 35%;">
+      <h2 class="bold">{{ player.initialName }}</h2>
+      <h3>{{ player.team.abbreviation }} {{ player.position }}</h3>
+    </div>
+    <div style="display: inline-block; width: 65%;">
+      <app-stat-slide [stat]="displayData"></app-stat-slide>
+    </div>
+  </ion-label>
+</ion-item>

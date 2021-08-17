@@ -85,10 +85,10 @@ export class UserResolver {
         }
     }
 
-    @Mutation(() => Result)
+    @Mutation(() => LoginResult)
     async register(
         @Arg('input') { email, password, username, profileImage }: RegisterInput
-    ): Promise<Result> {
+    ): Promise<LoginResult> {
 
         const creationTime = new Date().toISOString();
 
@@ -101,17 +101,13 @@ export class UserResolver {
             lastLoggedIn: creationTime
         }).save();
 
-        console.log(user);
-
         // await sendEmail(email, await createConfirmationUrl(user.id), 'Confirm');
 
         return {
-            success: [
-                {
-                    path: 'register',
-                    message: registerSuccess
-                }
-            ]
+            success: {
+                user,
+                message: registerSuccess
+            }
         }
     }
 
@@ -124,6 +120,7 @@ export class UserResolver {
         }: LoginInput,
         @Ctx() { res }: MyContext
     ): Promise<LoginResult> {
+        console.log(email);
         let user = await User.findOne({
             where: [
                 { email },
@@ -354,10 +351,10 @@ export class UserResolver {
         }
     }
 
-    @Mutation(() => Boolean)
+    @Mutation(() => Result)
     async logout(
         @Ctx() { res, payload }: MyContext
-    ) {
+    ): Promise<Result> {
         await User.update(
             { id: payload?.userId },
             { isLoggedIn: false }
@@ -366,7 +363,14 @@ export class UserResolver {
         res.clearCookie('access-token');
         res.clearCookie('refresh-token');
 
-        return true;
+        return {
+            success: [
+                {
+                    path: 'logout',
+                    message: 'User logged out successfully!'
+                }
+            ]
+        }
     };
 
 

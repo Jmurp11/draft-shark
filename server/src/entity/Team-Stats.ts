@@ -23,86 +23,86 @@ export class TeamStats extends BaseEntity {
     team!: number;
 
     @Field()
-    @Column('int')
-    rank!: number;
+    @Column('text')
+    timeOfPossession!: string;
 
     @Field()
     @Column('int')
-    passRank!: number;
+    year!: number;
+    
+    @Field()
+    @Column('int')
+    firstDowns!: number;
 
     @Field()
     @Column('int')
-    rushRank!: number;
+    firstDownsByRushing!: number;
 
     @Field()
-    @Column('float')
-    yards!: number;
+    @Column('int')
+    firstDownsByPassing!: number;
 
     @Field()
-    @Column('float')
+    @Column('int')
     plays!: number;
+
+    @Field()
+    @Column('int')
+    yards!: number;
 
     @Field()
     @Column('float')
     yardsPerPlay!: number;
 
     @Field()
+    @Column('int')
+    touchdowns!: number;
+
+    @Field()
+    @Column('int')
+    rushingAttempts!: number;
+
+    @Field()
+    @Column('int')
+    rushingYards!: number;
+
+    @Field()
     @Column('float')
+    rushingYardsPerAttempt!: number;
+
+    @Field()
+    @Column('int')
+    rushingTouchdowns!: number;
+
+    @Field()
+    @Column('int')
+    passingAttempts!: number;
+
+    @Field()
+    @Column('int')
+    passingCompletions!: number;
+
+    @Field()
+    @Column('int')
+    passingYards!: number;
+
+    @Field()
+    @Column('float')
+    passingYardsPerAttempt!: number;
+
+    @Field()
+    @Column('int')
+    passingTouchdowns!: number;
+
+    @Field()
+    @Column('float')
+    thirdDownPercentage!: number;
+
+    @Field()
+    @Column('int')
+    redzoneAttempts!: number;
+
+    @Field()
+    @Column('int')
     turnovers!: number;
-
-    @Field()
-    @Column('float')
-    passAttempts!: number;
-
-    @Field()
-    @Column('float')
-    passCompletions!: number;
-
-    @Field()
-    @Column('float')
-    passYards!: number;
-
-    @Field()
-    @Column('float')
-    passTd!: number;
-
-    @Field()
-    @Column('float')
-    interception!: number;
-
-    @Field()
-    @Column('float')
-    netYardsPerPass!: number;
-
-    @Field()
-    @Column('float')
-    rushAttempt!: number;
-
-    @Field()
-    @Column('float')
-    rushYards!: number;
-
-    @Field()
-    @Column('float')
-    rushTd!: number;
-
-    @Field()
-    @Column('float')
-    yardsPerRush!: number;
-
-    @Field()
-    @Column('float')
-    scorePercentage!: number;
-
-    @Field()
-    @Column('float')
-    turnoverPercentage!: number;
-
-    @Field()
-    @Column('float')
-    offensiveLineRank!: number;
-
-    @Field()
-    @Column('float')
-    runningBackSoS!: number;
 }

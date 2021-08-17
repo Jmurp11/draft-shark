@@ -1,0 +1,20 @@
+<ion-header [translucent]="true">
+
+  <ion-toolbar>
+    <ion-searchbar [disabled]="playersList?.length < 1" debounce="250" (ionChange)="filterPlayers($event)">
+    </ion-searchbar>
+    <ion-buttons slot="end">
+      <ion-button slot="end" (click)="presentSettingsActionSheet()">
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <app-player-list [playersList]="playersList" [playerListFiltered]="playerListFiltered" [scrollCount]="scrollCount"
+    [currentSearchTerm]="currentSearchTerm" [searchArray]="searchArray"></app-player-list>
+
+</ion-content>

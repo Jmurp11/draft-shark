@@ -1,4 +1,5 @@
 import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
+import * as https from 'https';
 import { Team } from '../../entity/Team';
 import { Result } from '../../shared';
 import { SelectQueryBuilder, getRepository } from 'typeorm';
@@ -27,7 +28,7 @@ export class TeamResolver {
             take,
             skip
         }: TeamArgs
-    ) {
+    ): Promise<Team[] | undefined> {
         let where;
 
         const query: SelectQueryBuilder<Team> = getRepository(Team)
@@ -63,7 +64,7 @@ export class TeamResolver {
             id,
             nickname,
             abbreviation
-        }: TeamArgs) {
+        }: TeamArgs): Promise<Team | undefined> {
         let where;
 
         const query: SelectQueryBuilder<Team> = getRepository(Team)
@@ -92,8 +93,12 @@ export class TeamResolver {
     async updateTeams(): Promise<Result> {
 
         try {
+            const httpsAgent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
             const response = await axios
-                .get(`https://api.sportsdata.io/v3/nfl/scores/json/Teams?key=${process.env.SPORTS_DATA_KEY}`);
+                .get(`https://fly.sportsdata.io/v3/nfl/scores/json/Teams?key=${process.env.SPORTS_DATA_KEY}`, { httpsAgent });
 
             const teamList = response.data;
 

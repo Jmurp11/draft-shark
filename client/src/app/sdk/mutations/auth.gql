@@ -8,6 +8,7 @@ mutation login($data: LoginInput!) {
         isAdmin
         profileImage
       }
+      message
     }
     errors {
       message
@@ -18,6 +19,13 @@ mutation login($data: LoginInput!) {
 mutation register($data: RegisterInput!) {
   register(input: $data) {
     success {
+      user {
+        id
+        email
+        username
+        isAdmin
+        profileImage
+      }
       message
     }
     errors {
@@ -27,5 +35,12 @@ mutation register($data: RegisterInput!) {
 }
 
 mutation logout {
-  logout
+  logout {
+    success {
+      message
+    }
+    errors {
+      message
+    }
+  }
 }

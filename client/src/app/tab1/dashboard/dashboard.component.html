@@ -1,0 +1,37 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title size="large" slot="start">Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div>
+    <ion-grid>
+      <ion-row class="ion-align-items-end">
+        <ion-col class="ion-align-self-start">
+          <ion-button>See All Latest News</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-slides pager="true" [options]="slideOpts">
+      <ion-slide *ngFor="let news of newsList | slice: 0:5" style="padding: 5%;">
+        <app-news [news]="news" [truncate]="truncate" class="card"></app-news>
+      </ion-slide>
+    </ion-slides>
+  </div>
+
+  <div>
+    <ion-grid>
+      <ion-row class="ion-align-items-end">
+        <ion-col class="ion-align-self-start">
+          <ion-button>See All Latest Notes</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-slides pager="true" [options]="slideOpts">
+      <ion-slide *ngFor="let note of noteList | slice: 0:5" style="padding: 5%;">
+        <app-note [note]="note" [truncate]="truncate" class="card"></app-note>
+      </ion-slide>
+    </ion-slides>
+  </div>
+</ion-content>

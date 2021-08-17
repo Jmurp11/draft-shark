@@ -2,6 +2,7 @@ query players($data: PlayerArgs!) {
   players(input: $data) {
     id
     name
+    initialName
     status
     position
     height
@@ -14,6 +15,31 @@ query players($data: PlayerArgs!) {
     draftYear
     draftRound
     draftPick
+    stats {
+      id
+      gamesPlayed
+      completions
+      attempts
+      passTd
+      passYards
+      interception
+      carries
+      rushYards
+      touches
+      rushTd
+      fumbles
+      targets
+      receptions
+      receivingYards
+      receivingTd
+      yardsPerCarry
+      yardsPerReception
+      offensiveTeamSnaps
+      offensiveSnapsPlayed
+      halfPPRTotalPoints
+      pprTotalPoints
+      totalPoints
+    }
     projection {
       id
       completions
@@ -45,20 +71,35 @@ query players($data: PlayerArgs!) {
       fullName
       primaryColor
       secondaryColor
+      conference
+      division
+      headCoach
+      offensiveCoordinator
+      defensiveCoordinator
+      offensiveScheme
       stats {
         id
-        rank
-        passRank
-        rushRank
+        timeOfPossession
+        year
+        firstDowns
+        firstDownsByRushing
+        firstDownsByPassing
         plays
+        yards
         yardsPerPlay
+        touchdowns
+        rushingAttempts
+        rushingYards
+        rushingYardsPerAttempt
+        rushingTouchdowns
+        passingAttempts
+        passingCompletions
+        passingYards
+        passingYardsPerAttempt
+        passingTouchdowns
+        thirdDownPercentage
+        redzoneAttempts
         turnovers
-        passAttempts
-        rushAttempt
-        scorePercentage
-        turnoverPercentage
-        offensiveLineRank
-        runningBackSoS
       }
       stadium {
         id
@@ -82,6 +123,14 @@ query players($data: PlayerArgs!) {
         winPercentage
       }
     }
+    news {
+      id
+      title
+      content
+      originalSource
+      originalSourceUrl
+      updated
+    }
   }
 }
 
@@ -96,12 +145,38 @@ query player($data: PlayerArgs!) {
     averageDraftPosition
     depthChart
     birthDate
-    age
     college
     photoUrl
     draftYear
     draftRound
     draftPick
+    stats {
+      id
+      gamesPlayed
+      completions
+      attempts
+      passTd
+      passYards
+      completionPercentage
+      interception
+      carries
+      rushYards
+      yardsPerCarry
+      yardsPerReception
+      yardsPerAttempt
+      touches
+      rushTd
+      fumbles
+      targets
+      receptions
+      receivingYards
+      receivingTd
+      offensiveTeamSnaps
+      offensiveSnapsPlayed
+      halfPPRTotalPoints
+      pprTotalPoints
+      totalPoints
+    }
     projection {
       id
       completions
@@ -128,24 +203,40 @@ query player($data: PlayerArgs!) {
     team {
       id
       city
+      nickname
       abbreviation
       fullName
       primaryColor
       secondaryColor
+      conference
+      division
+      headCoach
+      offensiveCoordinator
+      defensiveCoordinator
+      offensiveScheme
       stats {
         id
-        rank
-        passRank
-        rushRank
+        timeOfPossession
+        year
+        firstDowns
+        firstDownsByRushing
+        firstDownsByPassing
         plays
+        yards
         yardsPerPlay
+        touchdowns
+        rushingAttempts
+        rushingYards
+        rushingYardsPerAttempt
+        rushingTouchdowns
+        passingAttempts
+        passingCompletions
+        passingYards
+        passingYardsPerAttempt
+        passingTouchdowns
+        thirdDownPercentage
+        redzoneAttempts
         turnovers
-        passAttempts
-        rushAttempt
-        scorePercentage
-        turnoverPercentage
-        offensiveLineRank
-        runningBackSoS
       }
       stadium {
         id
@@ -168,6 +259,14 @@ query player($data: PlayerArgs!) {
         divisionLosses
         winPercentage
       }
+    }
+    news {
+      id
+      title
+      content
+      originalSource
+      originalSourceUrl
+      updated
     }
   }
 }

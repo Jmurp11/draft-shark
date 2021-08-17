@@ -1,4 +1,5 @@
 import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
+import * as https from 'https';
 import { Standings } from '../../entity/Standings';
 import { Result } from '../../shared';
 import { logger } from '../../middleware';
@@ -35,8 +36,12 @@ export class StandingsResolver {
         const year = new Date().getFullYear() - 1;
         console.log(year);
         try {
+            const httpsAgent = new https.Agent({
+                rejectUnauthorized: false
+            });
+
             const response = await axios
-                .get(`https://api.sportsdata.io/v3/nfl/scores/json/Standings/${year}?key=${process.env.SPORTS_DATA_KEY}`);
+                .get(`https://fly.sportsdata.io/v3/nfl/scores/json/Standings/${year}?key=${process.env.SPORTS_DATA_KEY}`, { httpsAgent });
 
             const standings = response.data;
 

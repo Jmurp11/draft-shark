@@ -36,7 +36,7 @@ export class NoteResolver {
             .createQueryBuilder('notes')
             .leftJoinAndSelect('notes.user', 'user')
             .leftJoinAndSelect('notes.folder', 'folder')
-            .leftJoinAndSelect('notes.noteReference', 'nc')
+            .leftJoinAndSelect('notes.noteReference', 'notesReferences')
             .take(take)
             .skip(skip)
             .orderBy('notes.creationTime', 'DESC')
@@ -51,6 +51,12 @@ export class NoteResolver {
             case 'byCurrentUserAndNoFolder':
                 if (ctx.payload?.userId) {
                     where = await this._notes.byCurrentUserAndNoFolder(ctx);
+                    return filterQuery(query, where).getMany();
+                }
+                return [];
+            case 'byCurrentUserAndPlayer':
+                if (ctx.payload?.userId) {
+                    where = await this._notes.byCurrentUserAndPlayer(ctx, player);
                     return filterQuery(query, where).getMany();
                 }
                 return [];
@@ -87,7 +93,7 @@ export class NoteResolver {
             .createQueryBuilder('notes')
             .leftJoinAndSelect('notes.user', 'user')
             .leftJoinAndSelect('notes.folder', 'folder')
-            .leftJoinAndSelect('notes.noteReference', 'nc');
+            .leftJoinAndSelect('notes.noteReference', 'notesReferences');
 
         where = await this._notes.byId(id);
         return filterQuery(query, where).getOne();

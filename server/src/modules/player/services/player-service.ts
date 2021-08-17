@@ -104,9 +104,28 @@ export class PlayerService {
             }
         };
 
+        //TODO: fix this
+        const fields2: Fields = {
+            fieldTable: 'players',
+            fieldName: 'status',
+            fieldOptions: {
+                not: `'Practice Squad'`
+            }
+        };
+
+        const fields3: Fields = {
+            fieldTable: 'players',
+            fieldName: 'status',
+            fieldOptions: {
+                not: `'Non Football Injury'`
+            }
+        };
+
         const filters: Where = {
             AND: [
-                fields
+                fields,
+                fields2,
+                fields3
             ]
         }
 

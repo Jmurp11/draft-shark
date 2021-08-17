@@ -54,6 +54,6 @@ import { createPlayersLoader } from './utils/playersLoader';
   const port = process.env.PORT || 4000;
 
   httpServer.listen(port, async () => {
-    console.log(chalk.blueBright('🏈  Draft Shark server is running on ') + chalk.greenBright('127.0.0.1:4000') + chalk.greenBright('...'));
+    console.log(chalk.blueBright('🏈  Draft Shark server is running on ') + chalk.greenBright(`127.0.0.1:${port}`) + chalk.greenBright('...'));
   });
 })();

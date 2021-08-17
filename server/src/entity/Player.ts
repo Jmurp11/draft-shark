@@ -14,6 +14,8 @@ import { Note } from './Note';
 import { Projection } from './Projection';
 import { MyContext } from 'src/shared';
 import { NoteReference } from './NoteReference';
+import { News } from './News';
+import { Stats } from './Stats';
 
 @Entity('players')
 @ObjectType()
@@ -124,6 +126,14 @@ export class Player extends BaseEntity {
   @OneToOne(() => Projection, projection => projection.player)
   @Field(() => Projection, { nullable: true })
   projection: Projection;
+
+  @OneToMany(() => Stats, stats => stats.player)
+  @Field(() => [Stats], { nullable: true })
+  stats: Stats[];
+
+  @OneToMany(() => News, news => news.playerId)
+  @Field(() => [News], { nullable: true })
+  news: News[];
 
   @OneToMany(() => NoteReference, nr => nr.player, {
     onDelete: 'CASCADE'

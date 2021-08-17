@@ -1,5 +1,5 @@
 query teams($data: TeamArgs!) {
-  teams(input: { filterType: null }) {
+  teams(input: $data) {
     id
     city
     nickname
@@ -17,27 +17,28 @@ query teams($data: TeamArgs!) {
     offensiveScheme
     defensiveScheme
     stats {
-      rank
-      passRank
-      rushRank
-      yards
+      id
+      timeOfPossession
+      year
+      firstDowns
+      firstDownsByRushing
+      firstDownsByPassing
       plays
+      yards
       yardsPerPlay
+      touchdowns
+      rushingAttempts
+      rushingYards
+      rushingYardsPerAttempt
+      rushingTouchdowns
+      passingAttempts
+      passingCompletions
+      passingYards
+      passingYardsPerAttempt
+      passingTouchdowns
+      thirdDownPercentage
+      redzoneAttempts
       turnovers
-      passAttempts
-      passCompletions
-      passYards
-      passTd
-      interception
-      netYardsPerPass
-      rushAttempt
-      rushYards
-      rushTd
-      yardsPerRush
-      scorePercentage
-      turnoverPercentage
-      offensiveLineRank
-      runningBackSoS
     }
     stadium {
       name
@@ -63,7 +64,7 @@ query teams($data: TeamArgs!) {
 }
 
 query team($data: TeamArgs!) {
-  teams(input: { filterType: null }) {
+  team(input: $data) {
     id
     city
     nickname
@@ -82,27 +83,27 @@ query team($data: TeamArgs!) {
     defensiveScheme
     stats {
       id
-      rank
-      passRank
-      rushRank
-      yards
+      timeOfPossession
+      year
+      firstDowns
+      firstDownsByRushing
+      firstDownsByPassing
       plays
+      yards
       yardsPerPlay
+      touchdowns
+      rushingAttempts
+      rushingYards
+      rushingYardsPerAttempt
+      rushingTouchdowns
+      passingAttempts
+      passingCompletions
+      passingYards
+      passingYardsPerAttempt
+      passingTouchdowns
+      thirdDownPercentage
+      redzoneAttempts
       turnovers
-      passAttempts
-      passCompletions
-      passYards
-      passTd
-      interception
-      netYardsPerPass
-      rushAttempt
-      rushYards
-      rushTd
-      yardsPerRush
-      scorePercentage
-      turnoverPercentage
-      offensiveLineRank
-      runningBackSoS
     }
     stadium {
       id
