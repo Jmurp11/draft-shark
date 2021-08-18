@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-news',
@@ -13,8 +14,11 @@ export class NewsComponent implements OnInit {
   @Input()
   truncate: boolean;
 
-  constructor() { }
+  constructor(private router: Router) { }
 
   ngOnInit() { }
 
+  navigateToPlayer(id: number) {
+    this.router.navigate([`tabs/players/${id}`]);
+  }
 }

@@ -130,6 +130,11 @@ query players($data: PlayerArgs!) {
       originalSource
       originalSourceUrl
       updated
+      playerId {
+        id
+        name
+        position
+      }
     }
   }
 }
@@ -267,6 +272,11 @@ query player($data: PlayerArgs!) {
       originalSource
       originalSourceUrl
       updated
+      playerId {
+        id
+        name
+        position
+      }
     }
   }
 }

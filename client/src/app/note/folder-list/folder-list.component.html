@@ -1,3 +1,14 @@
-<p>
-  folder-list works!
-</p>
+<ion-list>
+  <ion-item *ngFor="let folder of folders">
+    <ion-avatar>
+      <ion-icon name="folder"></ion-icon>
+    </ion-avatar>
+    <ion-label>
+      <div style="display: inline-block; width: 35%;">
+        <h2 class="bold">{{ folder.title }}</h2>
+        <h3>{{ folder.updatedTime | date }}</h3>
+      </div>
+    </ion-label>
+    <ion-badge slot="end" color="primary">{{ folder.notes.length}}</ion-badge>
+  </ion-item>
+</ion-list>

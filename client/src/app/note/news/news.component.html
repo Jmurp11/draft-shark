@@ -9,4 +9,5 @@
   <ion-card-content *ngIf="!truncate">
     {{ news.content }}
   </ion-card-content>
+  <ion-chip color="primary" (click)="navigateToPlayer(news.playerId.id)">{{ news.playerId.name }}, {{ news.playerId.position }}</ion-chip>
 </ion-card>
