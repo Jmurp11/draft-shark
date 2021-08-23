@@ -40,6 +40,7 @@ export class PlayerResolver {
             .leftJoinAndSelect('players.projection', 'projection')
             .leftJoinAndSelect('players.playerConnection', 'pc')
             .leftJoinAndSelect('players.news', 'news')
+            .leftJoinAndSelect('news.playerId', 'playerId')
             .leftJoinAndSelect('players.stats', 'stats')
             .take(take)
             .skip(skip)
@@ -86,6 +87,7 @@ export class PlayerResolver {
             .leftJoinAndSelect('players.projection', 'projection')
             .leftJoinAndSelect('players.playerConnection', 'pc')
             .leftJoinAndSelect('players.news', 'news')
+            .leftJoinAndSelect('news.playerId', 'playerId')
             .leftJoinAndSelect('players.stats', 'stats')
 
         switch (filterType) {
