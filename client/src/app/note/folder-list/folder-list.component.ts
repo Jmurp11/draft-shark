@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { ApolloAngularSDK, FolderArgs, FoldersDocument } from '../../sdk/generated/graphql';
 import { UiService, Colors } from '../../shared/ui.service';
 
+// TODO: Handle delete caching note list
 @Component({
   selector: 'app-folder-list',
   templateUrl: './folder-list.component.html',

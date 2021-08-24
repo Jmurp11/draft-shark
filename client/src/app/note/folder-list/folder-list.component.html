@@ -9,7 +9,7 @@
         <h3>{{ folder.updatedTime | date }}</h3>
       </div>
     </ion-label>
-    <ion-badge slot="end" color="primary" (click)="uiService.openListModal(folder.notes, 'notes')">{{
+    <ion-badge slot="end" color="secondary" (click)="uiService.openListModal(folder.notes, 'notes')">{{
       folder.notes.length}}</ion-badge>
     <ion-icon slot="end" name="trash-outline" [color]="folder.id === 0 ? 'medium' : 'danger'"
       (click)="onDelete(folder.id)"></ion-icon>

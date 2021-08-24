@@ -47,15 +47,24 @@ const environment = {
           cache: new InMemoryCache({
             typePolicies: {
               Folder: {
-                merge: true
+                fields: {
+                  notes: {
+                    merge(existing = [], incoming: any[]) {
+                      return [...existing, ...incoming];
+                    },
+                  },
+                },
               },
-              Note: {
-                merge: true
-              },
-              NoteReference: {
-                merge: true
+              User: {
+                fields: {
+                  folders: {
+                    merge(existing = [], incoming: any[]) {
+                      return [...existing, ...incoming];
+                    },
+                  },
+                },
               }
-            }
+            },
           }),
         };
       },
