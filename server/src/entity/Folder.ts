@@ -30,7 +30,6 @@ export class Folder extends BaseEntity {
     
     @Field(() => [Note], { nullable: true })
     @OneToMany(() => Note, note => note.folder, {
-        onDelete: 'CASCADE',
         eager: true
     })
     notes: Note[];

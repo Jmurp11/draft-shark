@@ -35,7 +35,9 @@ export class Note extends BaseEntity {
     @Column('uuid')
     user!: string;
 
-    @ManyToOne(() => Folder)
+    @ManyToOne(() => Folder,{
+        onDelete: 'CASCADE'
+    })
     @JoinColumn({ name: 'folder' })
     @Field(() => Folder, { nullable: true })
     @Column('uuid', { nullable: true })
@@ -61,9 +63,7 @@ export class Note extends BaseEntity {
     @Column('timestamp')
     updatedTime!: string;
 
-    @OneToMany(() => NoteReference, nr => nr.note, {
-        onDelete: 'CASCADE'
-    })
+    @OneToMany(() => NoteReference, nr => nr.note)
     noteReference: Promise<NoteReference>;
 
     @Field(() => [Player], { nullable: true })

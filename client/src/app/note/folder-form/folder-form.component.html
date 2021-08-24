@@ -3,22 +3,8 @@
     <form>
       <ion-item>
         <ion-label position="floating">Title</ion-label>
-        <ion-input required name="title" [(ngModel)]="note.title"></ion-input>
+        <ion-input required name="title" [(ngModel)]="title"></ion-input>
         <ion-icon slot="end" name="close-outline" class="ion-align-self-center pointer"></ion-icon>
-      </ion-item>
-
-      <ion-item>
-        <ion-label position="floating">Folder</ion-label>
-        <ion-select name="folder" [(ngModel)]="note.folder">
-          <ion-select-option *ngFor="let folder of folders" [value]="folder.id">{{ folder.title }}</ion-select-option>
-        </ion-select>
-      </ion-item>
-
-      <ion-item>
-        <div class="container">
-          <textarea class="textarea" name="body" [(ngModel)]="note.body" placeholder="Use @ to add player's name..." required
-          [mentionConfig]="mentionConfig"></textarea>
-        </div>
       </ion-item>
     </form>
   </ion-card>

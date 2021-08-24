@@ -2,7 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { tap, switchMap } from 'rxjs/operators';
-import { ApolloAngularSDK } from 'src/app/sdk/generated/graphql';
+import { UiService } from 'src/app/shared/ui.service';
+import { DashboardService } from '../dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,6 +15,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   subSink: Subscription = new Subscription();
   newsList: any[];
   noteList: any[];
+  folders: any[];
   truncate: boolean = true;
 
   slideOpts = {
@@ -21,7 +23,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     speed: 400
   };
 
-  constructor(private apolloSdk: ApolloAngularSDK, private loadingController: LoadingController) { }
+  constructor(
+    public uiService: UiService,
+    private dashboardService: DashboardService,
+    private loadingController: LoadingController,
+  ) { }
 
   async ngOnInit() {
 
@@ -32,12 +38,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
     await loadingData.present();
 
     this.subSink.add(
-      this.getNotes()
+      this.dashboardService.notes
         .pipe(
-          tap(({ data }) => this.noteList = data.notes),
-          switchMap(() => this.getNews())
-        ).subscribe(({ data, loading }) => {
-          this.newsList = data.news;
+          tap((notes) => this.noteList = notes),
+          switchMap(() => this.dashboardService.news),
+          tap((news) => this.newsList = news),
+          switchMap(() => this.dashboardService.folders),
+          tap((folders) => {
+            const notesWithNoFolder = {
+              id: 0,
+              title: 'Loose Notes',
+              creationTime: new Date(),
+              updatedTime: new Date(),
+              notes: [...this.noteList]
+            };
+            this.folders = [...folders, notesWithNoFolder];
+          }),
+          switchMap(() => this.dashboardService.loading)
+        ).subscribe((loading) => {
           if (!loading) {
             loadingData.dismiss();
           }
@@ -48,20 +66,4 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subSink.unsubscribe();
   }
-
-  getNotes() {
-    return this.apolloSdk.notesWatch(
-      {
-        data: {
-          filterType: 'byCurrentUser'
-        }
-      }
-    ).valueChanges;
-  }
-
-  getNews() {
-    return this.apolloSdk.newsWatch()
-      .valueChanges;
-  }
-
 }

@@ -1,3 +1,16 @@
-<p>
-  list works!
-</p>
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let item of filteredList">
+      <app-note class="card" [note]="item" *ngIf="listType === 'notes'"></app-note>
+      <app-news class="card" [news]="item" *ngIf="listType === 'news'"></app-news>
+    </ion-item>
+  </ion-list>
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadMoreItems($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" [loadingText]="loadingText">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+
+</ion-content>
+<ion-footer>
+  <ion-button expand="block" color="warning" (click)="dismiss()">Close</ion-button>
+</ion-footer>

@@ -12,4 +12,19 @@
   <span *ngFor="let ref of note.references">
     <ion-chip color="primary" (click)="navigateToPlayer(ref.id)">{{ ref.name }}, {{ ref.position }}</ion-chip>
   </span>
+
+  <ion-grid>
+    <ion-row class="ion-align-items-center" height="50px">
+      <ion-col class="ion-text-start">
+        <ion-button color="danger" (click)="onDelete(note.id)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+      <ion-col class="ion-text-end">
+        <ion-button color="warning" disabled>
+          <ion-icon name="create-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-card>

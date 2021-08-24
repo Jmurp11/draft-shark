@@ -6,9 +6,10 @@ import { GraphQLModule } from '../graphql.module';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CreateNoteComponent } from './create-note/create-note.component';
+import { CreateFolderButtonComponent } from './create-folder-button/create-folder-button.component';
 
 @NgModule({
-  declarations: [CreateNoteComponent],
+  declarations: [CreateNoteComponent, CreateFolderButtonComponent],
   imports: [
     CommonModule,
     IonicModule,
@@ -21,6 +22,7 @@ import { CreateNoteComponent } from './create-note/create-note.component';
   exports: [
     CommonModule,
     CreateNoteComponent,
+    CreateFolderButtonComponent,
     FlexLayoutModule,
     FormsModule,
     GraphQLModule,
