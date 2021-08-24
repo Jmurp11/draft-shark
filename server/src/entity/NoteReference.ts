@@ -16,7 +16,8 @@ export class NoteReference extends BaseEntity {
     playerId: number;
 
     @ManyToOne(() => Note, {
-        primary: true
+        primary: true,
+        onDelete: 'CASCADE'
     })
     note!: Promise<Note>;
 
