@@ -7,8 +7,20 @@ query folders($data: FolderArgs!) {
     notes {
       id
       title
+      body
+      isPrivate
       creationTime
       updatedTime
+      user {
+        id
+        username
+        profileImage
+      }
+      references {
+        id
+        name
+        position
+      }
     }
   }
 }

@@ -3,10 +3,8 @@
     <ion-card-title slot start>{{news.title}}</ion-card-title>
     <ion-card-subtitle>{{news.originalSource}} - {{ news.updated | date }}</ion-card-subtitle>
   </ion-card-header>
-  <ion-card-content *ngIf="truncate">
-    {{ (news.content | slice:0:150) + '...' }}
-  </ion-card-content>
   <ion-card-content *ngIf="!truncate">
     {{ news.content }}
   </ion-card-content>
+  <ion-chip color="primary" (click)="navigateToPlayer(news.playerId.id)">{{ news.playerId.name }}, {{ news.playerId.position }}</ion-chip>
 </ion-card>

@@ -1058,7 +1058,14 @@ export type FoldersQuery = (
     & Pick<Folder, 'id' | 'title' | 'creationTime' | 'updatedTime'>
     & { notes?: Maybe<Array<(
       { __typename?: 'Note' }
-      & Pick<Note, 'id' | 'title' | 'creationTime' | 'updatedTime'>
+      & Pick<Note, 'id' | 'title' | 'body' | 'isPrivate' | 'creationTime' | 'updatedTime'>
+      & { user: (
+        { __typename?: 'User' }
+        & Pick<User, 'id' | 'username' | 'profileImage'>
+      ), references?: Maybe<Array<(
+        { __typename?: 'Player' }
+        & Pick<Player, 'id' | 'name' | 'position'>
+      )>> }
     )>> }
   )> }
 );
@@ -1101,7 +1108,7 @@ export type NewsQuery = (
     & Pick<News, 'id' | 'title' | 'content' | 'originalSource' | 'updated'>
     & { playerId?: Maybe<(
       { __typename?: 'Player' }
-      & Pick<Player, 'id' | 'name'>
+      & Pick<Player, 'id' | 'name' | 'position'>
     )> }
   )> }
 );
@@ -1184,6 +1191,10 @@ export type PlayersQuery = (
     )>, news?: Maybe<Array<(
       { __typename?: 'News' }
       & Pick<News, 'id' | 'title' | 'content' | 'originalSource' | 'originalSourceUrl' | 'updated'>
+      & { playerId?: Maybe<(
+        { __typename?: 'Player' }
+        & Pick<Player, 'id' | 'name' | 'position'>
+      )> }
     )>> }
   )> }
 );
@@ -1220,6 +1231,10 @@ export type PlayerQuery = (
     )>, news?: Maybe<Array<(
       { __typename?: 'News' }
       & Pick<News, 'id' | 'title' | 'content' | 'originalSource' | 'originalSourceUrl' | 'updated'>
+      & { playerId?: Maybe<(
+        { __typename?: 'Player' }
+        & Pick<Player, 'id' | 'name' | 'position'>
+      )> }
     )>> }
   ) }
 );
@@ -1841,8 +1856,20 @@ export const FoldersDocument = gql`
     notes {
       id
       title
+      body
+      isPrivate
       creationTime
       updatedTime
+      user {
+        id
+        username
+        profileImage
+      }
+      references {
+        id
+        name
+        position
+      }
     }
   }
 }
@@ -1917,6 +1944,7 @@ export const NewsDocument = gql`
     playerId {
       id
       name
+      position
     }
     updated
   }
@@ -2140,6 +2168,11 @@ export const PlayersDocument = gql`
       originalSource
       originalSourceUrl
       updated
+      playerId {
+        id
+        name
+        position
+      }
     }
   }
 }
@@ -2289,6 +2322,11 @@ export const PlayerDocument = gql`
       originalSource
       originalSourceUrl
       updated
+      playerId {
+        id
+        name
+        position
+      }
     }
   }
 }

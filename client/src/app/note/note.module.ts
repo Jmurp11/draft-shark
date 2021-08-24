@@ -7,6 +7,7 @@ import { MentionModule } from 'angular-mentions';
 import { FormsModule } from '@angular/forms';
 import { FolderListComponent } from './folder-list/folder-list.component';
 import { NewsComponent } from './news/news.component';
+import { FolderFormComponent } from './folder-form/folder-form.component';
 
 
 
@@ -15,6 +16,7 @@ import { NewsComponent } from './news/news.component';
     NoteComponent,
     NoteFormComponent,
     FolderListComponent,
+    FolderFormComponent,
     NewsComponent
   ],
   imports: [
@@ -27,6 +29,7 @@ import { NewsComponent } from './news/news.component';
     NoteComponent,
     NoteFormComponent,
     FolderListComponent,
+    FolderFormComponent,
     NewsComponent
   ]
 })

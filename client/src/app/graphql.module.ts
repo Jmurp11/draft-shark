@@ -44,12 +44,32 @@ const environment = {
 
         return {
           link,
-          cache: new InMemoryCache(),
+          cache: new InMemoryCache({
+            typePolicies: {
+              Folder: {
+                fields: {
+                  notes: {
+                    merge(existing = [], incoming: any[]) {
+                      return [...existing, ...incoming];
+                    },
+                  },
+                },
+              },
+              User: {
+                fields: {
+                  folders: {
+                    merge(existing = [], incoming: any[]) {
+                      return [...existing, ...incoming];
+                    },
+                  },
+                },
+              }
+            },
+          }),
         };
       },
       deps: [HttpLink],
     },
   ],
 })
-export class GraphQLModule {}
-
+export class GraphQLModule { }
