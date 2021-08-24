@@ -44,12 +44,23 @@ const environment = {
 
         return {
           link,
-          cache: new InMemoryCache(),
+          cache: new InMemoryCache({
+            typePolicies: {
+              Folder: {
+                merge: true
+              },
+              Note: {
+                merge: true
+              },
+              NoteReference: {
+                merge: true
+              }
+            }
+          }),
         };
       },
       deps: [HttpLink],
     },
   ],
 })
-export class GraphQLModule {}
-
+export class GraphQLModule { }

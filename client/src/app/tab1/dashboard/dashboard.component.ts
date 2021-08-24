@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { tap, switchMap } from 'rxjs/operators';
+import { UiService } from 'src/app/shared/ui.service';
 import { DashboardService } from '../dashboard.service';
 
 @Component({
@@ -24,9 +24,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   constructor(
+    public uiService: UiService,
     private dashboardService: DashboardService,
     private loadingController: LoadingController,
-    private router: Router
   ) { }
 
   async ngOnInit() {
@@ -65,9 +65,5 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subSink.unsubscribe();
-  }
-
-  navigate(route: string) {
-    this.router.navigate([`/tabs/dashboard/${route}`]);
   }
 }

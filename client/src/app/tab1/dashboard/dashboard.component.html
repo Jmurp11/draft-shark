@@ -5,14 +5,14 @@
 </ion-header>
 <ion-content [fullscreen]="true">
   <div>
-    <div class="center padding-top">
-      <ion-button size="small" (click)="navigate('news')">See All Latest News</ion-button>
-    </div>
     <ion-slides class="full-width" pager="true" [options]="slideOpts">
       <ion-slide class="full-width" *ngFor="let news of newsList | slice: 0:5" style="padding: 5%;">
         <app-news [news]="news" [truncate]="truncate" class="card"></app-news>
       </ion-slide>
     </ion-slides>
+    <div class="center padding-top">
+      <ion-button size="small" (click)="uiService.openListModal(newsList, 'news')">See All Latest News</ion-button>
+    </div>
   </div>
 
   <div>

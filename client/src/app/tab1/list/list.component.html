@@ -1,11 +1,4 @@
-<ion-content [fullscreen]="true">
-  <ion-header>
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-back-button></ion-back-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
   <ion-list>
     <ion-item *ngFor="let item of filteredList">
       <app-note class="card" [note]="item" *ngIf="listType === 'notes'"></app-note>
@@ -16,4 +9,8 @@
     <ion-infinite-scroll-content loadingSpinner="bubbles" [loadingText]="loadingText">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
+
 </ion-content>
+<ion-footer>
+  <ion-button expand="block" color="warning" (click)="dismiss()">Close</ion-button>
+</ion-footer>

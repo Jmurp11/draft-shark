@@ -25,7 +25,9 @@ export class DashboardService {
         .pipe(
           tap(({ data }) => this.setNotes(data.notes)),
           switchMap(() => this.getFolders()),
-          tap(({ data }) => this.setFolders(data.folders)),
+          tap(({ data }) => {
+            this.setFolders(data.folders);
+          }),
           switchMap(() => this.getNews())
         ).subscribe(({ data, loading }) => {
           this.setNews(data.news);
