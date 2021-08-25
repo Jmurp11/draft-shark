@@ -69,6 +69,15 @@ export class PlayerDetailComponent implements OnInit {
       td: number;
     };
   };
+  advanced: {
+    title: string;
+    value: {
+      rushOppShare: number;
+      tarOppShare: number;
+      rushProductionRating: number;
+      recProductionRating: number;
+    };
+  };
   coachingInfo: {
     title: string;
     value: {
@@ -183,7 +192,7 @@ export class PlayerDetailComponent implements OnInit {
 
             this.populateSlideData(this.player);
 
-            this.playerSlides = [this.info, this.summary, this.passing, this.rushing, this.receiving];
+            this.playerSlides = [this.info, this.summary, this.passing, this.rushing, this.receiving, this.advanced];
             this.teamSlides = [this.teamSummary, this.teamScoring, this.teamPassing, this.teamRushing,
             this.coachingInfo, this.conferenceInfo, this.stadium];
 
@@ -273,6 +282,15 @@ export class PlayerDetailComponent implements OnInit {
         yds: player.stats[0]?.rushYards,
         ypc: player.stats[0]?.yardsPerCarry,
         td: player.stats[0]?.rushTd
+      }
+    };
+    this.advanced = {
+      title: 'Advanced Stats',
+      value: {
+        rushOppShare: player.stats[0]?.carries / player.team.stats.rushingAttempts,
+        tarOppShare: player.stats[0]?.targets / player.team.stats.passingAttempts,
+        rushProductionRating: player.stats[0]?.rushYards / player.team.stats.rushingYards,
+        recProductionRating: player.stats[0]?.receivingYards / player.team.stats.passingYards,
       }
     };
     this.teamSummary = {
