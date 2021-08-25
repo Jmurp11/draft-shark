@@ -77,6 +77,44 @@ export class PlayerDetailComponent implements OnInit {
       scheme: string;
     };
   };
+  teamSummary: {
+    title: string;
+    value: {
+      top: string;
+      plays: number;
+      firstDowns: number;
+      yards: number;
+    }
+  };
+  teamScoring: {
+    title: string;
+    value: {
+      td: number;
+      redzone: number;
+      to: number;
+    }
+  };
+  teamPassing: {
+    title: string;
+    value: {
+      firstDownsByPass: number;
+      att: number;
+      cmp: number;
+      yards: number;
+      ydsPerAtt: number;
+      td: number;
+    }
+  };
+  teamRushing: {
+    title: string;
+    value: {
+      firstDownsByRush: number;
+      att: number;
+      yards: number;
+      ydsPerAtt: number;
+      td: number;
+    }
+  };
   conferenceInfo: {
     title: string;
     value: {
@@ -146,7 +184,8 @@ export class PlayerDetailComponent implements OnInit {
             this.populateSlideData(this.player);
 
             this.playerSlides = [this.info, this.summary, this.passing, this.rushing, this.receiving];
-            this.teamSlides = [this.coachingInfo, this.conferenceInfo, this.stadium];
+            this.teamSlides = [this.teamSummary, this.teamScoring, this.teamPassing, this.teamRushing,
+            this.coachingInfo, this.conferenceInfo, this.stadium];
 
             switch (this.player.status) {
               case 'Active':
@@ -234,6 +273,44 @@ export class PlayerDetailComponent implements OnInit {
         yds: player.stats[0]?.rushYards,
         ypc: player.stats[0]?.yardsPerCarry,
         td: player.stats[0]?.rushTd
+      }
+    };
+    this.teamSummary = {
+      title: 'Team Summary',
+      value: {
+        top: player.team.stats.timeOfPossession,
+        plays: player.team.stats.plays,
+        firstDowns: player.team.stats.firstDowns,
+        yards: player.team.stats.yards,
+      }
+    };
+    this.teamScoring = {
+      title: 'Team Scoring',
+      value: {
+        td: player.team.stats.touchdowns,
+        redzone: player.team.stats.redzoneAttempts,
+        to: player.team.stats.turnovers,
+      }
+    };
+    this.teamPassing = {
+      title: 'Team Passing',
+      value: {
+        firstDownsByPass: player.team.stats.firstDownsByPassing,
+        att: player.team.stats.passingAttempts,
+        cmp: player.team.stats.passingCompletions,
+        yards: player.team.stats.passingYards,
+        ydsPerAtt: player.team.stats.passingYardsPerAttempt,
+        td: player.team.stats.passingTouchdowns,
+      }
+    };
+    this.teamRushing = {
+      title: 'Team Rushing',
+      value: {
+        firstDownsByRush: player.team.stats.firstDownsByRushing,
+        att: player.team.stats.rushingAttempts,
+        yards: player.team.stats.rushingYards,
+        ydsPerAtt: player.team.stats.rushingYardsPerAttempt,
+        td: player.team.stats.rushingTouchdowns,
       }
     };
     this.coachingInfo = {
